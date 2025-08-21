@@ -5,8 +5,16 @@
  */
 
 import { CommandResult } from '../types';
+import { BeancountEngine } from '../engine/beancount-engine';
 
 export abstract class BaseCommand {
+  protected engine?: BeancountEngine;
+
+  constructor(engine?: BeancountEngine) {
+    if (engine) {
+      this.engine = engine;
+    }
+  }
   /**
    * 执行命令
    *

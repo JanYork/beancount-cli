@@ -16,6 +16,11 @@ import { ConfigCommand } from './config-command';
 import { HelpCommand } from './help-command';
 import { InitStructureCommand } from './init-structure-command';
 import { CheckStructureCommand } from './check-structure-command';
+import { SearchCommand } from './search-command';
+import { ReportCommand } from './report-command';
+import { ExportCommand } from './export-command';
+import { EditTransactionCommand } from './edit-transaction-command';
+import { DeleteTransactionCommand } from './delete-transaction-command';
 
 export class CommandFactory {
   /**
@@ -47,6 +52,16 @@ export class CommandFactory {
         return new InitStructureCommand();
       case 'check_structure':
         return new CheckStructureCommand();
+      case 'search':
+        return new SearchCommand(engine);
+      case 'report':
+        return new ReportCommand(engine);
+      case 'export':
+        return new ExportCommand(engine);
+      case 'edit_transaction':
+        return new EditTransactionCommand(engine);
+      case 'delete_transaction':
+        return new DeleteTransactionCommand(engine);
       default:
         return null;
     }
@@ -69,6 +84,11 @@ export class CommandFactory {
       'help',
       'init_structure',
       'check_structure',
+      'search',
+      'report',
+      'export',
+      'edit_transaction',
+      'delete_transaction',
       'reload',
       'quit',
     ];

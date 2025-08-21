@@ -11,11 +11,8 @@ import { AccountTranslator } from '../utils/account-translator';
 import chalk from 'chalk';
 
 export class ListAccountsCommand extends BaseCommand {
-  private engine: BeancountEngine;
-
   constructor(engine: BeancountEngine) {
-    super();
-    this.engine = engine;
+    super(engine);
   }
 
   /**
@@ -26,7 +23,7 @@ export class ListAccountsCommand extends BaseCommand {
    */
   execute(_params: Record<string, any>): import('../types').CommandResult {
     try {
-      const accounts = this.engine.getAccounts();
+      const accounts = this.engine?.getAccounts() || [];
       const currentLanguage = getLanguage();
 
       if (accounts.length === 0) {

@@ -9,11 +9,8 @@ import { BeancountEngine } from '../engine/beancount-engine';
 import chalk from 'chalk';
 
 export class ValidateCommand extends BaseCommand {
-  private engine: BeancountEngine;
-
   constructor(engine: BeancountEngine) {
-    super();
-    this.engine = engine;
+    super(engine);
   }
 
   /**
@@ -25,7 +22,7 @@ export class ValidateCommand extends BaseCommand {
   execute(_params: Record<string, any>): import('../types').CommandResult {
     try {
       // 获取文件状态来检查错误
-      const stats = this.engine.getFileStats();
+      const stats = this.engine?.getFileStats() || { transactions: 0, accounts: 0, errors: [] };
       const errorCount = stats['totalErrors'] || 0;
 
       if (errorCount === 0) {

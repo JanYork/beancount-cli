@@ -5,22 +5,13 @@
  */
 
 import { Command } from 'commander';
-// Mock chalk for testing compatibility
-const chalk = {
-  blue: { bold: (text: string) => text },
-  cyan: (text: string) => text,
-  magenta: { bold: (text: string) => text },
-  yellow: (text: string) => text,
-  green: (text: string) => text,
-  gray: (text: string) => text,
-  red: (text: string) => text,
-};
 import inquirer from 'inquirer';
 import { BeancountEngine } from './engine/beancount-engine';
 import { CommandFactory } from './commands/command-factory';
 import { CommandResult } from './types';
 import { CommandCompleter } from './utils/command-completer';
 import { t, tn } from './utils/i18n';
+import { UIEnhancer } from './utils/ui-enhancer';
 
 // 完整的CommandParser实现
 export class CommandParser {
@@ -144,10 +135,7 @@ export class BeancountCLI {
    * 打印欢迎横幅
    */
   private printBanner(): void {
-    console.log();
-    console.log(chalk.blue.bold(t('cli.banner.title')));
-    console.log(chalk.cyan(t('cli.banner.subtitle')));
-    console.log();
+    UIEnhancer.showBanner('Beancount CLI', t('cli.banner.subtitle'));
   }
 
   /**
@@ -157,15 +145,15 @@ export class BeancountCLI {
     try {
       const stats = this.engine.getFileStats();
 
-      console.log(chalk.magenta.bold(t('status.title')));
-      console.log(chalk.cyan(`${t('status.accounts')} ${stats['totalAccounts']}`));
-      console.log(chalk.cyan(`${t('status.transactions')} ${stats['totalTransactions']}`));
-      console.log(chalk.cyan(`${t('status.balances')} ${stats['totalBalances']}`));
-      console.log(chalk.cyan(`${t('status.errors')} ${stats['totalErrors']}`));
-      console.log(chalk.cyan(`${t('status.filepath')} ${stats['filePath']}`));
+      console.log(`\n📊 ${t('status.title')}`);
+      UIEnhancer.showStatCard(t('status.accounts'), stats['totalAccounts'], '个', 0);
+      UIEnhancer.showStatCard(t('status.transactions'), stats['totalTransactions'], '条', 0);
+      UIEnhancer.showStatCard(t('status.balances'), stats['totalBalances'], '个', 0);
+      UIEnhancer.showStatCard(t('status.errors'), stats['totalErrors'], '个', 0);
+      console.log(`📁 ${t('status.filepath')}: ${stats['filePath']}`);
       console.log();
     } catch (error) {
-      console.log(chalk.yellow(t('status.unavailable')));
+      UIEnhancer.showWarning(t('status.unavailable'));
       console.log();
     }
   }
@@ -178,7 +166,7 @@ export class BeancountCLI {
       {
         type: 'input',
         name: 'userInput',
-        message: chalk.green(t('cli.prompt.message')),
+        message: t('cli.prompt.message'),
         default: '',
         prefix: '',
         suffix: '',
@@ -191,7 +179,7 @@ export class BeancountCLI {
               process.stdout.write('\x1b[2K\r');
               // 显示建议
               const suggestionText = suggestions.map(s => `/${s.command}`).join(' ');
-              process.stdout.write(chalk.gray(`${t('completion.suggestions')} ${suggestionText}`));
+              process.stdout.write(`💡 ${t('completion.suggestions')} ${suggestionText}`);
             }
           }
           return input;
@@ -210,7 +198,7 @@ export class BeancountCLI {
         // 自动补全
         const suggestion = suggestions[0];
         if (suggestion) {
-          console.log(chalk.gray(`${t('completion.auto.complete')} /${suggestion.command}`));
+          UIEnhancer.showInfo(`${t('completion.auto.complete')} /${suggestion.command}`);
           await this.processCommand(`/${suggestion.command}`);
         }
         return;
@@ -248,14 +236,14 @@ export class BeancountCLI {
       // 验证命令
       if (!CommandParser.validateCommand(parsedCommand.command)) {
         this.handleError(`${t('cli.invalid.command')} ${parsedCommand.command}`);
-        console.log(chalk.gray(t('cli.help.suggestion')));
+        console.log(t('cli.help.suggestion'));
         return;
       }
 
       // 处理特殊命令
       if (parsedCommand.command === 'quit') {
         this.running = false;
-        console.log(chalk.green(t('cli.quit')));
+        UIEnhancer.showSuccess(t('cli.quit'));
         return;
       }
 
@@ -263,7 +251,7 @@ export class BeancountCLI {
         if (parsedCommand.params['args'] && parsedCommand.params['args'].length > 0) {
           const helpText = CommandParser.getCommandHelp(parsedCommand.params['args'][0]);
           if (helpText) {
-            console.log(chalk.cyan(helpText));
+            console.log(helpText);
           } else {
             this.handleError(`未知命令: ${parsedCommand.params['args'][0]}`);
           }
@@ -280,7 +268,7 @@ export class BeancountCLI {
 
       if (parsedCommand.command === 'reload') {
         this.engine.reload();
-        console.log(chalk.yellow(t('cli.reload.success')));
+        UIEnhancer.showWarning(t('cli.reload.success'));
         this.printStatus();
         return;
       }
@@ -305,12 +293,9 @@ export class BeancountCLI {
    */
   private displayResult(result: CommandResult): void {
     if (result.success) {
-      console.log(chalk.green(t('cli.success')));
-      console.log(result.message);
-      // 移除技术细节的显示，只保留用户友好的信息
+      UIEnhancer.showSuccess(result.message);
     } else {
-      console.log(chalk.red(t('cli.error')));
-      console.log(result.message);
+      UIEnhancer.showError(result.message);
     }
     console.log();
   }
@@ -321,7 +306,7 @@ export class BeancountCLI {
    * @param error 错误信息
    */
   private handleError(error: string): void {
-    console.log(chalk.red(t('cli.error.general')), error);
+    UIEnhancer.showError(`${t('cli.error.general')} ${error}`);
     console.log();
   }
 }
@@ -348,19 +333,19 @@ async function main(): Promise<void> {
         // 如果没有提供文件路径，使用配置文件中的默认路径
         if (!filePath) {
           filePath = configManager.expandPath(configManager.get('data.default_file'));
-          console.log(chalk.cyan(`${t('startup.using.default.path')} ${filePath}`));
+          console.log(`${t('startup.using.default.path')} ${filePath}`);
         }
 
         // 检查文件是否存在，如果不存在则引导用户创建
         const fs = await import('fs');
         if (!fs.existsSync(filePath)) {
-          console.log(chalk.yellow(`${t('startup.file.not.exists')} ${filePath}`));
+          console.log(`${t('startup.file.not.exists')} ${filePath}`);
 
           const { createInitialSetup } = await import('./utils/setup-wizard');
           const shouldCreate = await createInitialSetup(filePath, configManager);
 
           if (!shouldCreate) {
-            console.log(chalk.gray(t('startup.goodbye')));
+            console.log(t('startup.goodbye'));
             process.exit(0);
           }
         }
@@ -368,7 +353,7 @@ async function main(): Promise<void> {
         const cli = new BeancountCLI(filePath);
         await cli.run();
       } catch (error) {
-        console.error(chalk.red(t('startup.failed')), error);
+        console.error(t('startup.failed'), error);
         process.exit(1);
       }
     });

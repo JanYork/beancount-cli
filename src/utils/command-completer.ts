@@ -55,6 +55,31 @@ export class CommandCompleter {
       usage: 'usage.commands.config',
     },
     {
+      command: 'search',
+      description: 'help.commands.search',
+      usage: 'usage.commands.search',
+    },
+    {
+      command: 'report',
+      description: 'help.commands.report',
+      usage: 'usage.commands.report',
+    },
+    {
+      command: 'export',
+      description: 'help.commands.export',
+      usage: 'usage.commands.export',
+    },
+    {
+      command: 'edit_transaction',
+      description: 'help.commands.edit_transaction',
+      usage: 'usage.commands.edit_transaction',
+    },
+    {
+      command: 'delete_transaction',
+      description: 'help.commands.delete_transaction',
+      usage: 'usage.commands.delete_transaction',
+    },
+    {
       command: 'quit',
       description: 'help.commands.quit',
       usage: 'usage.commands.quit',

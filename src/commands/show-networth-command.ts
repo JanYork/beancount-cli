@@ -10,11 +10,8 @@ import { BeancountEngine } from '../engine/beancount-engine';
 import chalk from 'chalk';
 
 export class ShowNetworthCommand extends BaseCommand {
-  private engine: BeancountEngine;
-
   constructor(engine: BeancountEngine) {
-    super();
-    this.engine = engine;
+    super(engine);
   }
 
   /**
@@ -40,7 +37,7 @@ export class ShowNetworthCommand extends BaseCommand {
       }
 
       // 获取净资产信息
-      const networth = this.engine.getNetWorth(balanceDate);
+      const networth = this.engine?.getNetWorth(balanceDate) || { total: 0, currency: 'CNY' };
 
       if (!networth) {
         return this.createSuccessResult('💰 无法计算净资产信息');

@@ -11,11 +11,8 @@ import { t, getLanguage } from '../utils/i18n';
 import { AccountTranslator } from '../utils/account-translator';
 
 export class ShowBalanceCommand extends BaseCommand {
-  private engine: BeancountEngine;
-
   constructor(engine: BeancountEngine) {
-    super();
-    this.engine = engine;
+    super(engine);
   }
 
   /**
@@ -42,7 +39,7 @@ export class ShowBalanceCommand extends BaseCommand {
       }
 
       // 获取余额
-      const balances = this.engine.getBalances(account, balanceDate);
+      const balances = this.engine?.getBalances(account, balanceDate) || [];
 
       if (balances.length === 0) {
         return this.createSuccessResult(t('balance.no.data'));

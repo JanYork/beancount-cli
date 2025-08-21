@@ -207,6 +207,30 @@ export class BeancountEngine {
   }
 
   /**
+   * 保存交易记录列表
+   */
+  public async saveTransactions(transactions: Transaction[]): Promise<void> {
+    // 清除现有的交易条目
+    this.entries = this.entries.filter(entry => entry.type !== 'transaction');
+
+    // 添加新的交易条目
+    for (const transaction of transactions) {
+      const entry: BeancountEntry = {
+        type: 'transaction',
+        date: transaction.date,
+        payee: transaction.payee,
+        narration: transaction.narration,
+        postings: transaction.postings,
+        meta: { ...transaction.meta, tags: transaction.tags, links: transaction.links },
+      };
+      this.entries.push(entry);
+    }
+
+    // 保存文件
+    this.saveFile();
+  }
+
+  /**
    * 获取账户余额
    */
   public getBalances(account?: string, balanceDate?: Date): Balance[] {
