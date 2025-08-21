@@ -42,9 +42,9 @@ describe('ListAccountsCommand', () => {
       expect(result.message).toContain('💰 资产账户');
       expect(result.message).toContain('💸 支出账户');
       expect(result.message).toContain('📈 收入账户');
-      expect(result.message).toContain('Assets:Cash');
-      expect(result.message).toContain('Expenses:Food');
-      expect(result.message).toContain('Income:Salary');
+      expect(result.message).toContain('现金');
+      expect(result.message).toContain('餐饮');
+      expect(result.message).toContain('工资');
     });
 
     it('should handle empty accounts list', () => {
@@ -108,32 +108,32 @@ describe('ListAccountsCommand', () => {
 
   describe('getAccountType', () => {
     it('should categorize Assets accounts correctly', () => {
-      const result = (command as any).getAccountType('Assets:Cash');
+      const result = (command as any).getAccountType('Assets:Cash', 'zh-CN');
       expect(result).toBe('💰 资产账户');
     });
 
     it('should categorize Liabilities accounts correctly', () => {
-      const result = (command as any).getAccountType('Liabilities:Credit');
+      const result = (command as any).getAccountType('Liabilities:Credit', 'zh-CN');
       expect(result).toBe('💳 负债账户');
     });
 
     it('should categorize Equity accounts correctly', () => {
-      const result = (command as any).getAccountType('Equity:Opening');
+      const result = (command as any).getAccountType('Equity:Opening', 'zh-CN');
       expect(result).toBe('🏦 权益账户');
     });
 
     it('should categorize Income accounts correctly', () => {
-      const result = (command as any).getAccountType('Income:Salary');
+      const result = (command as any).getAccountType('Income:Salary', 'zh-CN');
       expect(result).toBe('📈 收入账户');
     });
 
     it('should categorize Expenses accounts correctly', () => {
-      const result = (command as any).getAccountType('Expenses:Food');
+      const result = (command as any).getAccountType('Expenses:Food', 'zh-CN');
       expect(result).toBe('💸 支出账户');
     });
 
     it('should categorize unknown accounts correctly', () => {
-      const result = (command as any).getAccountType('Unknown:Account');
+      const result = (command as any).getAccountType('Unknown:Account', 'zh-CN');
       expect(result).toBe('❓ 其他账户');
     });
   });

@@ -14,6 +14,8 @@ import { ListAccountsCommand } from './list-accounts-command';
 import { ValidateCommand } from './validate-command';
 import { ConfigCommand } from './config-command';
 import { HelpCommand } from './help-command';
+import { InitStructureCommand } from './init-structure-command';
+import { CheckStructureCommand } from './check-structure-command';
 
 export class CommandFactory {
   /**
@@ -26,7 +28,7 @@ export class CommandFactory {
   static createCommand(commandName: string, engine: BeancountEngine): BaseCommand | null {
     switch (commandName) {
       case 'add_transaction':
-        return new AddTransactionCommand(engine);
+        return new AddTransactionCommand();
       case 'list_transactions':
         return new ListTransactionsCommand(engine);
       case 'show_balance':
@@ -41,6 +43,10 @@ export class CommandFactory {
         return new ConfigCommand();
       case 'help':
         return new HelpCommand();
+      case 'init_structure':
+        return new InitStructureCommand();
+      case 'check_structure':
+        return new CheckStructureCommand();
       default:
         return null;
     }
@@ -61,6 +67,8 @@ export class CommandFactory {
       'validate',
       'config',
       'help',
+      'init_structure',
+      'check_structure',
       'reload',
       'quit',
     ];

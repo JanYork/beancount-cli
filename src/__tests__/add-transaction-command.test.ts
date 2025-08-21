@@ -5,18 +5,17 @@
  */
 
 import { AddTransactionCommand } from '../commands/add-transaction-command';
-import { BeancountEngine } from '../engine/beancount-engine';
+
 
 // Mock BeancountEngine
 jest.mock('../engine/beancount-engine');
 
 describe('AddTransactionCommand', () => {
   let command: AddTransactionCommand;
-  let mockEngine: jest.Mocked<BeancountEngine>;
+
 
   beforeEach(() => {
-    mockEngine = new BeancountEngine('test.beancount') as jest.Mocked<BeancountEngine>;
-    command = new AddTransactionCommand(mockEngine);
+    command = new AddTransactionCommand();
   });
 
   describe('execute', () => {
@@ -226,9 +225,10 @@ describe('AddTransactionCommand', () => {
     });
 
     it('should handle engine error', () => {
-      // 测试引擎抛出异常的情况
-      mockEngine.addTransaction.mockImplementation(() => {
-        throw new Error('Engine error');
+      // 测试文件操作抛出异常的情况
+      const mockFs = require('fs');
+      jest.spyOn(mockFs, 'appendFileSync').mockImplementation(() => {
+        throw new Error('File write error');
       });
 
       const params = {
@@ -246,7 +246,7 @@ describe('AddTransactionCommand', () => {
       expect(result.message).toContain('添加交易记录失败');
 
       // 恢复 mock
-      mockEngine.addTransaction.mockRestore();
+      jest.restoreAllMocks();
     });
   });
 

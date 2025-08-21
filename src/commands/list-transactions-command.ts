@@ -100,17 +100,17 @@ export class ListTransactionsCommand extends BaseCommand {
    */
   getHelp(): string {
     return `
-📋 列出交易记录
-用法: /list_transactions [start_date=2024-01-01] [end_date=2024-01-31]
+      📋 列出交易记录
+      用法: /list_transactions [start_date=2024-01-01] [end_date=2024-01-31]
 
-参数:
-- start_date: 开始日期 (YYYY-MM-DD, 可选)
-- end_date: 结束日期 (YYYY-MM-DD, 可选)
+      参数:
+      - start_date: 开始日期 (YYYY-MM-DD, 可选)
+      - end_date: 结束日期 (YYYY-MM-DD, 可选)
 
-示例:
-/list_transactions
-/list_transactions start_date=2024-01-01
-/list_transactions start_date=2024-01-01 end_date=2024-01-31
+      示例:
+      /list_transactions
+      /list_transactions start_date=2024-01-01
+      /list_transactions start_date=2024-01-01 end_date=2024-01-31
     `;
   }
 }

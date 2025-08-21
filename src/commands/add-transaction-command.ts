@@ -6,16 +6,23 @@
 
 import { parse, format } from 'date-fns';
 import { BaseCommand } from './base-command';
-import { BeancountEngine } from '../engine/beancount-engine';
 import { Transaction, Posting } from '../types';
+import { BeancountFileManager } from '../utils/file-manager';
+import { ConfigManager } from '../utils/config-manager';
 import chalk from 'chalk';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class AddTransactionCommand extends BaseCommand {
-  private engine: BeancountEngine;
 
-  constructor(engine: BeancountEngine) {
+  private fileManager: BeancountFileManager;
+
+
+  constructor() {
     super();
-    this.engine = engine;
+
+    this.fileManager = new BeancountFileManager();
+
   }
 
   /**
@@ -84,8 +91,8 @@ export class AddTransactionCommand extends BaseCommand {
         meta: {},
       };
 
-      // 添加到引擎
-      this.engine.addTransaction(transaction);
+      // 添加到适当的文件
+      this.addTransactionToFile(transaction);
 
       // 格式化成功消息
       const formattedDate = format(transactionDate, 'yyyy-MM-dd');
@@ -161,5 +168,98 @@ export class AddTransactionCommand extends BaseCommand {
     }
 
     return { valid: errors.length === 0, errors };
+  }
+
+  /**
+   * 将交易记录添加到适当的文件
+   */
+  private addTransactionToFile(transaction: Transaction): void {
+    const transactionString = this.formatTransactionForFile(transaction);
+    const targetFile = this.determineTargetFile(transaction.date);
+
+    try {
+      // 确保目标文件存在
+      this.ensureFileExists(targetFile);
+
+      // 追加到文件末尾
+      fs.appendFileSync(targetFile, '\n' + transactionString + '\n', 'utf8');
+
+      console.log(chalk.gray(`💾 交易已添加到: ${path.relative(process.cwd(), targetFile)}`));
+    } catch (error) {
+      // 如果多文件结构失败，回退到主文件
+      console.warn(chalk.yellow('⚠️  多文件写入失败，回退到主文件'));
+      const configManager = ConfigManager.getInstance();
+      const mainFile = configManager.get('data.default_file') || 'main.beancount';
+      fs.appendFileSync(mainFile as string, '\n' + transactionString + '\n', 'utf8');
+    }
+  }
+
+  /**
+   * 将交易格式化为文件格式
+   */
+  private formatTransactionForFile(transaction: Transaction): string {
+    const dateStr = format(transaction.date, 'yyyy-MM-dd');
+    let result = `${dateStr} * "${transaction.narration}"`;
+
+    if (transaction.payee) {
+      result = `${dateStr} * "${transaction.payee}" "${transaction.narration}"`;
+    }
+
+    transaction.postings.forEach(posting => {
+      const amount = posting.units ? `${posting.units.number} ${posting.units.currency}` : '';
+      result += `\n  ${posting.account.padEnd(40)} ${amount}`;
+    });
+
+    return result;
+  }
+
+  /**
+   * 确定目标文件路径
+   */
+  private determineTargetFile(date: Date): string {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+
+    const structure = this.fileManager.getStructureInfo();
+    const monthName = this.getMonthName(month);
+    const monthStr = month.toString().padStart(2, '0');
+
+    return path.join(structure.root, 'data', year.toString(), `${monthStr}-${monthName}.beancount`);
+  }
+
+  /**
+   * 获取月份英文名称
+   */
+  private getMonthName(month: number): string {
+    const months = [
+      'january', 'february', 'march', 'april', 'may', 'june',
+      'july', 'august', 'september', 'october', 'november', 'december'
+    ];
+    return months[month - 1] || 'january';
+  }
+
+  /**
+   * 确保文件存在
+   */
+  private ensureFileExists(filePath: string): void {
+    // 确保目录存在
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    // 如果文件不存在，创建基本的月度文件
+    if (!fs.existsSync(filePath)) {
+      const fileName = path.basename(filePath, '.beancount');
+      const [monthStr] = fileName.split('-');
+      const year = path.basename(dir);
+
+      const monthlyTemplate = `;; ${year}年${monthStr}月交易记录
+;; 生成时间: ${new Date().toISOString().split('T')[0]}
+
+`;
+      fs.writeFileSync(filePath, monthlyTemplate, 'utf8');
+      console.log(chalk.blue(`📄 创建月度文件: ${path.relative(process.cwd(), filePath)}`));
+    }
   }
 }

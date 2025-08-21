@@ -23,6 +23,7 @@ const chalk = {
 export interface BeancountConfig {
   data: {
     default_file: string;
+    default_file_dir: string;
     data_dir: string;
     backup_dir: string;
     export_dir: string;
@@ -209,6 +210,7 @@ export class ConfigManager {
     return {
       data: {
         default_file: path.join(os.homedir(), 'beancount', 'main.beancount'),
+        default_file_dir: path.join(os.homedir(), 'beancount'),
         data_dir: path.join(os.homedir(), 'beancount', 'data'),
         backup_dir: path.join(os.homedir(), 'beancount', 'backups'),
         export_dir: path.join(os.homedir(), 'beancount', 'exports'),

@@ -138,8 +138,8 @@ describe('ShowBalanceCommand', () => {
       const result = command.execute({});
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Assets:Cash: +1000 CNY');
-      expect(result.message).toContain('Assets:Bank: +5000 CNY');
+      expect(result.message).toContain('现金: +1,000');
+      expect(result.message).toContain('银行账户: +5,000');
     });
 
     it('should handle negative amounts', () => {
@@ -156,7 +156,7 @@ describe('ShowBalanceCommand', () => {
       const result = command.execute({});
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Liabilities:Credit: -1000 CNY');
+      expect(result.message).toContain('信用卡: -1,000');
     });
 
     it('should handle decimal amounts', () => {
@@ -173,7 +173,7 @@ describe('ShowBalanceCommand', () => {
       const result = command.execute({});
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Assets:Cash: +1000.5 CNY');
+      expect(result.message).toContain('现金: +1,000.5');
     });
 
     it('should handle multiple balances in loop', () => {
@@ -200,9 +200,9 @@ describe('ShowBalanceCommand', () => {
       const result = command.execute({});
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('Assets:Cash: +1000 CNY');
-      expect(result.message).toContain('Assets:Bank: +5000 CNY');
-      expect(result.message).toContain('Liabilities:Credit: -2000 CNY');
+      expect(result.message).toContain('现金: +1,000');
+      expect(result.message).toContain('银行账户: +5,000');
+      expect(result.message).toContain('信用卡: -2,000');
     });
 
     it('should handle engine error', () => {

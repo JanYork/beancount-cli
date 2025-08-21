@@ -96,7 +96,9 @@ export class AccountTranslator {
     // Equity (权益)
     { en: 'Equity', zh: '权益', category: 'root' },
     { en: 'Equity:Opening', zh: '期初余额', category: 'equity' },
+    { en: 'Equity:Opening-Balances', zh: '期初余额', category: 'equity' },
     { en: 'Equity:Closing', zh: '期末余额', category: 'equity' },
+    { en: 'Equity:Closing-Balances', zh: '期末余额', category: 'equity' },
     { en: 'Equity:RetainedEarnings', zh: '留存收益', category: 'equity' },
   ];
 

@@ -8,14 +8,14 @@ import { BaseCommand } from './base-command';
 import chalk from 'chalk';
 
 export class HelpCommand extends BaseCommand {
-  /**
-   * 执行帮助命令
-   *
-   * @param params 命令参数
-   * @returns 执行结果
-   */
-  execute(_params: Record<string, any>): import('../types').CommandResult {
-    const helpText = `
+   /**
+    * 执行帮助命令
+    *
+    * @param params 命令参数
+    * @returns 执行结果
+    */
+   execute(_params: Record<string, any>): import('../types').CommandResult {
+      const helpText = `
 🤖 Beancount CLI 帮助信息
 
 ${chalk.cyan.bold('📋 可用命令:')}
@@ -41,6 +41,12 @@ ${chalk.green('/validate')}          验证文件
 ${chalk.green('/config')}            配置管理
    ${chalk.gray('用法:')} /config [action="操作"] [key="配置项"] [value="配置值"]
 
+${chalk.green('/init_structure')}   初始化多文件结构
+   ${chalk.gray('用法:')} /init_structure [path="目录路径"] [year="年份"] [force="强制覆盖"]
+
+${chalk.green('/check_structure')}  检查文件结构
+   ${chalk.gray('用法:')} /check_structure [path="目录路径"] [fix="自动修复"]
+
 ${chalk.green('/reload')}            重新加载文件
    ${chalk.gray('用法:')} /reload
 
@@ -51,10 +57,11 @@ ${chalk.green('/quit')}              退出程序
    ${chalk.gray('用法:')} /quit
 
 ${chalk.yellow.bold('💡 快速上手:')}
-1. 查看余额: ${chalk.cyan('/show_balance')}
-2. 查看交易: ${chalk.cyan('/list_transactions')}
-3. 添加交易: ${chalk.cyan('/add_transaction date=2024-01-01 narration="午餐" postings=[{"account":"Expenses:Food","amount":25},{"account":"Assets:Cash","amount":-25}]')}
-4. 管理配置: ${chalk.cyan('/config')}
+1. 初始化文件结构: ${chalk.cyan('/init_structure')}
+2. 查看余额: ${chalk.cyan('/show_balance')}
+3. 查看交易: ${chalk.cyan('/list_transactions')}
+4. 添加交易: ${chalk.cyan('/add_transaction date=2024-01-01 narration="午餐" postings=[{"account":"Expenses:Food","amount":25},{"account":"Assets:Cash","amount":-25}]')}
+5. 管理配置: ${chalk.cyan('/config')}
 
 ${chalk.blue.bold('📝 提示:')}
 - 所有命令都支持 /xxx 格式
@@ -64,16 +71,16 @@ ${chalk.blue.bold('📝 提示:')}
 - 输入 /help 查看详细帮助
     `;
 
-    return this.createSuccessResult(helpText);
-  }
+      return this.createSuccessResult(helpText);
+   }
 
-  /**
-   * 获取命令帮助信息
-   *
-   * @returns 帮助信息
-   */
-  getHelp(): string {
-    return `
+   /**
+    * 获取命令帮助信息
+    *
+    * @returns 帮助信息
+    */
+   getHelp(): string {
+      return `
 ❓ 帮助命令
 用法: /help [command="命令名称"]
 
@@ -84,5 +91,5 @@ ${chalk.blue.bold('📝 提示:')}
 /help
 /help command="add_transaction"
     `;
-  }
+   }
 }
