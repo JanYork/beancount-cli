@@ -1,6 +1,6 @@
 /**
  * 显示净资产命令
- * 
+ *
  * 作者: JanYork
  */
 
@@ -19,7 +19,7 @@ export class ShowNetworthCommand extends BaseCommand {
 
   /**
    * 执行显示净资产命令
-   * 
+   *
    * @param params 命令参数
    * @returns 执行结果
    */
@@ -52,11 +52,11 @@ export class ShowNetworthCommand extends BaseCommand {
       const netWorth = networth['netWorth'] || 0;
 
       let result = `💰 净资产报告\n\n`;
-      
+
       result += `${chalk.green.bold('📈 资产:')} ${chalk.green(`+${totalAssets.toFixed(2)} CNY`)}\n`;
       result += `${chalk.red.bold('💳 负债:')} ${chalk.red(`-${totalLiabilities.toFixed(2)} CNY`)}\n`;
       result += `${chalk.cyan.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')}\n`;
-      
+
       const netWorthColor = netWorth >= 0 ? chalk.green : chalk.red;
       const netWorthSign = netWorth >= 0 ? '+' : '';
       result += `${chalk.blue.bold('🏦 净资产:')} ${netWorthColor(`${netWorthSign}${netWorth.toFixed(2)} CNY`)}\n`;
@@ -73,7 +73,7 @@ export class ShowNetworthCommand extends BaseCommand {
 
   /**
    * 获取命令帮助信息
-   * 
+   *
    * @returns 帮助信息
    */
   getHelp(): string {
@@ -91,4 +91,4 @@ export class ShowNetworthCommand extends BaseCommand {
 /show_networth date=2024-01-01
     `;
   }
-} 
+}

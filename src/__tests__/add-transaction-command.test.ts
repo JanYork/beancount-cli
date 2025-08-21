@@ -1,12 +1,11 @@
 /**
  * 添加交易命令测试
- * 
+ *
  * 作者: JanYork
  */
 
 import { AddTransactionCommand } from '../commands/add-transaction-command';
 import { BeancountEngine } from '../engine/beancount-engine';
-
 
 // Mock BeancountEngine
 jest.mock('../engine/beancount-engine');
@@ -27,8 +26,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25 },
-          { account: 'Assets:Cash', amount: -25 }
-        ]
+          { account: 'Assets:Cash', amount: -25 },
+        ],
       };
 
       const result = command.execute(params);
@@ -41,7 +40,7 @@ describe('AddTransactionCommand', () => {
     it('should fail when date is missing', () => {
       const params = {
         narration: '午餐',
-        postings: [{ account: 'Expenses:Food', amount: 25 }]
+        postings: [{ account: 'Expenses:Food', amount: 25 }],
       };
 
       const result = command.execute(params);
@@ -53,7 +52,7 @@ describe('AddTransactionCommand', () => {
     it('should fail when narration is missing', () => {
       const params = {
         date: '2024-01-01',
-        postings: [{ account: 'Expenses:Food', amount: 25 }]
+        postings: [{ account: 'Expenses:Food', amount: 25 }],
       };
 
       const result = command.execute(params);
@@ -66,7 +65,7 @@ describe('AddTransactionCommand', () => {
       const params = {
         date: 'invalid-date',
         narration: '午餐',
-        postings: [{ account: 'Expenses:Food', amount: 25 }]
+        postings: [{ account: 'Expenses:Food', amount: 25 }],
       };
 
       const result = command.execute(params);
@@ -80,7 +79,7 @@ describe('AddTransactionCommand', () => {
       const params = {
         date: '2024-13-45', // Invalid month and day
         narration: '午餐',
-        postings: [{ account: 'Expenses:Food', amount: 25 }]
+        postings: [{ account: 'Expenses:Food', amount: 25 }],
       };
 
       const result = command.execute(params);
@@ -89,13 +88,11 @@ describe('AddTransactionCommand', () => {
       expect(result.message).toContain('日期格式错误');
     });
 
-
-
     it('should fail when postings array is empty', () => {
       const params = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: []
+        postings: [],
       };
 
       const result = command.execute(params);
@@ -107,7 +104,7 @@ describe('AddTransactionCommand', () => {
     it('should fail when postings is missing', () => {
       const params = {
         date: '2024-01-01',
-        narration: '午餐'
+        narration: '午餐',
       };
 
       const result = command.execute(params);
@@ -120,10 +117,7 @@ describe('AddTransactionCommand', () => {
       const params = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: [
-          { amount: 25 },
-          { account: 'Assets:Cash', amount: -25 }
-        ]
+        postings: [{ amount: 25 }, { account: 'Assets:Cash', amount: -25 }],
       };
 
       const result = command.execute(params);
@@ -136,10 +130,7 @@ describe('AddTransactionCommand', () => {
       const params = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: [
-          { account: 'Expenses:Food' },
-          { account: 'Assets:Cash', amount: -25 }
-        ]
+        postings: [{ account: 'Expenses:Food' }, { account: 'Assets:Cash', amount: -25 }],
       };
 
       const result = command.execute(params);
@@ -154,8 +145,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25 },
-          { account: 'Assets:Cash', amount: -25 }
-        ]
+          { account: 'Assets:Cash', amount: -25 },
+        ],
       };
 
       const result = command.execute(params);
@@ -171,8 +162,8 @@ describe('AddTransactionCommand', () => {
         postings: [
           { account: '', amount: 25 }, // 缺少账户名称
           { account: 'Assets:Cash' }, // 缺少金额
-          { account: 'Expenses:Food', amount: 25 } // 有效分录
-        ]
+          { account: 'Expenses:Food', amount: 25 }, // 有效分录
+        ],
       };
 
       const result = command.execute(params);
@@ -189,7 +180,7 @@ describe('AddTransactionCommand', () => {
         postings: [
           { account: '', amount: 25 }, // 缺少账户名称，会被过滤
           { account: 'Assets:Cash' }, // 缺少金额，会被过滤
-        ]
+        ],
       };
 
       const result = command.execute(params);
@@ -205,8 +196,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25 },
-          { account: 'Assets:Cash', amount: -25 }
-        ]
+          { account: 'Assets:Cash', amount: -25 },
+        ],
       };
 
       const result = command.execute(params);
@@ -225,7 +216,7 @@ describe('AddTransactionCommand', () => {
           { account: '', amount: 25 }, // 缺少账户名称，会被过滤
           { account: 'Assets:Cash', amount: -25 }, // 有效分录
           { account: 'Income:Salary' }, // 缺少金额，会被过滤
-        ]
+        ],
       };
 
       const result = command.execute(params);
@@ -245,8 +236,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25 },
-          { account: 'Assets:Cash', amount: -25 }
-        ]
+          { account: 'Assets:Cash', amount: -25 },
+        ],
       };
 
       const result = command.execute(params);
@@ -262,7 +253,7 @@ describe('AddTransactionCommand', () => {
   describe('getHelp', () => {
     it('should return help text', () => {
       const help = command.getHelp();
-      
+
       expect(help).toContain('添加交易记录');
       expect(help).toContain('用法:');
       expect(help).toContain('参数:');
@@ -275,7 +266,7 @@ describe('AddTransactionCommand', () => {
       const validParams = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: [{ account: 'Expenses:Food', amount: 25 }]
+        postings: [{ account: 'Expenses:Food', amount: 25 }],
       };
 
       const result = command['validateParams'](validParams);
@@ -286,7 +277,7 @@ describe('AddTransactionCommand', () => {
     it('should detect missing date', () => {
       const invalidParams = {
         narration: '午餐',
-        postings: [{ account: 'Expenses:Food', amount: 25 }]
+        postings: [{ account: 'Expenses:Food', amount: 25 }],
       };
 
       const result = command['validateParams'](invalidParams);
@@ -297,7 +288,7 @@ describe('AddTransactionCommand', () => {
     it('should detect missing narration', () => {
       const invalidParams = {
         date: '2024-01-01',
-        postings: [{ account: 'Expenses:Food', amount: 25 }]
+        postings: [{ account: 'Expenses:Food', amount: 25 }],
       };
 
       const result = command['validateParams'](invalidParams);
@@ -308,7 +299,7 @@ describe('AddTransactionCommand', () => {
     it('should detect missing postings', () => {
       const invalidParams = {
         date: '2024-01-01',
-        narration: '午餐'
+        narration: '午餐',
       };
 
       const result = command['validateParams'](invalidParams);
@@ -322,8 +313,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food' }, // missing amount
-          { amount: -25 } // missing account
-        ]
+          { amount: -25 }, // missing account
+        ],
       };
 
       const result = command['validateParams'](invalidParams);
@@ -336,9 +327,7 @@ describe('AddTransactionCommand', () => {
       const invalidParams = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: [
-          { account: undefined, amount: 25 }
-        ]
+        postings: [{ account: undefined, amount: 25 }],
       };
 
       const result = command['validateParams'](invalidParams);
@@ -350,9 +339,7 @@ describe('AddTransactionCommand', () => {
       const invalidParams = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: [
-          { account: null, amount: 25 }
-        ]
+        postings: [{ account: null, amount: 25 }],
       };
 
       const result = command['validateParams'](invalidParams);
@@ -364,9 +351,7 @@ describe('AddTransactionCommand', () => {
       const invalidParams = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: [
-          { account: 'Expenses:Food', amount: undefined }
-        ]
+        postings: [{ account: 'Expenses:Food', amount: undefined }],
       };
 
       const result = command['validateParams'](invalidParams);
@@ -378,9 +363,7 @@ describe('AddTransactionCommand', () => {
       const invalidParams = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: [
-          { account: 'Expenses:Food', amount: null }
-        ]
+        postings: [{ account: 'Expenses:Food', amount: null }],
       };
 
       const result = command['validateParams'](invalidParams);
@@ -392,9 +375,7 @@ describe('AddTransactionCommand', () => {
       const invalidParams = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: [
-          { account: '', amount: 25 }
-        ]
+        postings: [{ account: '', amount: 25 }],
       };
 
       const result = command['validateParams'](invalidParams);
@@ -406,9 +387,7 @@ describe('AddTransactionCommand', () => {
       const invalidParams = {
         date: '2024-01-01',
         narration: '午餐',
-        postings: [
-          { account: '   ', amount: 25 }
-        ]
+        postings: [{ account: '   ', amount: 25 }],
       };
 
       const result = command['validateParams'](invalidParams);
@@ -422,8 +401,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 0 },
-          { account: 'Assets:Cash', amount: 0 }
-        ]
+          { account: 'Assets:Cash', amount: 0 },
+        ],
       };
 
       const result = command['validateParams'](validParams);
@@ -437,8 +416,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25 },
-          { account: 'Assets:Cash', amount: -25 }
-        ]
+          { account: 'Assets:Cash', amount: -25 },
+        ],
       };
 
       const result = command['validateParams'](validParams);
@@ -451,9 +430,9 @@ describe('AddTransactionCommand', () => {
         date: '2024-01-01',
         narration: '午餐',
         postings: [
-          { account: 'Expenses:Food', amount: 25.50 },
-          { account: 'Assets:Cash', amount: -25.50 }
-        ]
+          { account: 'Expenses:Food', amount: 25.5 },
+          { account: 'Assets:Cash', amount: -25.5 },
+        ],
       };
 
       const result = command['validateParams'](validParams);
@@ -467,8 +446,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25, currency: 'USD' },
-          { account: 'Assets:Cash', amount: -25, currency: 'USD' }
-        ]
+          { account: 'Assets:Cash', amount: -25, currency: 'USD' },
+        ],
       };
 
       const result = command['validateParams'](validParams);
@@ -482,8 +461,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25 },
-          { account: 'Assets:Cash', amount: -25 }
-        ]
+          { account: 'Assets:Cash', amount: -25 },
+        ],
       };
 
       const result = command['validateParams'](validParams);
@@ -497,8 +476,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25, currency: '' },
-          { account: 'Assets:Cash', amount: -25, currency: '' }
-        ]
+          { account: 'Assets:Cash', amount: -25, currency: '' },
+        ],
       };
 
       const result = command['validateParams'](validParams);
@@ -512,8 +491,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25, currency: undefined },
-          { account: 'Assets:Cash', amount: -25, currency: undefined }
-        ]
+          { account: 'Assets:Cash', amount: -25, currency: undefined },
+        ],
       };
 
       const result = command['validateParams'](validParams);
@@ -527,8 +506,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25, currency: null },
-          { account: 'Assets:Cash', amount: -25, currency: null }
-        ]
+          { account: 'Assets:Cash', amount: -25, currency: null },
+        ],
       };
 
       const result = command['validateParams'](validParams);
@@ -542,8 +521,8 @@ describe('AddTransactionCommand', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', amount: 25, currency: '   ' },
-          { account: 'Assets:Cash', amount: -25, currency: '   ' }
-        ]
+          { account: 'Assets:Cash', amount: -25, currency: '   ' },
+        ],
       };
 
       const result = command['validateParams'](validParams);
@@ -551,4 +530,4 @@ describe('AddTransactionCommand', () => {
       expect(result.errors).toHaveLength(0);
     });
   });
-}); 
+});

@@ -1,6 +1,6 @@
 /**
  * 帮助命令测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -28,9 +28,9 @@ describe('HelpCommand', () => {
     });
 
     it('should return help text with any parameters', () => {
-      const result = command.execute({ 
+      const result = command.execute({
         command: 'add_transaction',
-        verbose: true 
+        verbose: true,
       });
 
       expect(result.success).toBe(true);
@@ -72,7 +72,7 @@ describe('HelpCommand', () => {
   describe('getHelp', () => {
     it('should return help text for help command', () => {
       const help = command.getHelp();
-      
+
       expect(help).toContain('❓ 帮助命令');
       expect(help).toContain('用法:');
       expect(help).toContain('参数:');
@@ -81,15 +81,15 @@ describe('HelpCommand', () => {
 
     it('should include parameter description', () => {
       const help = command.getHelp();
-      
+
       expect(help).toContain('command: 特定命令名称 (可选)');
     });
 
     it('should include usage examples', () => {
       const help = command.getHelp();
-      
+
       expect(help).toContain('/help');
       expect(help).toContain('/help command="add_transaction"');
     });
   });
-}); 
+});

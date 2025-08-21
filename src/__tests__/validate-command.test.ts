@@ -1,6 +1,6 @@
 /**
  * 验证命令测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -17,19 +17,19 @@ describe('ValidateCommand', () => {
   beforeEach(() => {
     // 清除所有mock
     jest.clearAllMocks();
-    
+
     // 创建mock实例
     mockEngine = {
-      getFileStats: jest.fn()
+      getFileStats: jest.fn(),
     } as any;
-    
+
     command = new ValidateCommand(mockEngine);
   });
 
   describe('execute', () => {
     it('should show success when no errors found', () => {
       const mockStats = {
-        totalErrors: 0
+        totalErrors: 0,
       };
       mockEngine.getFileStats.mockReturnValue(mockStats);
 
@@ -44,7 +44,7 @@ describe('ValidateCommand', () => {
 
     it('should show errors when validation fails', () => {
       const mockStats = {
-        totalErrors: 3
+        totalErrors: 3,
       };
       mockEngine.getFileStats.mockReturnValue(mockStats);
 
@@ -58,7 +58,7 @@ describe('ValidateCommand', () => {
 
     it('should handle zero errors correctly', () => {
       const mockStats = {
-        totalErrors: 0
+        totalErrors: 0,
       };
       mockEngine.getFileStats.mockReturnValue(mockStats);
 
@@ -70,7 +70,7 @@ describe('ValidateCommand', () => {
 
     it('should handle single error correctly', () => {
       const mockStats = {
-        totalErrors: 1
+        totalErrors: 1,
       };
       mockEngine.getFileStats.mockReturnValue(mockStats);
 
@@ -113,4 +113,4 @@ describe('ValidateCommand', () => {
       expect(help).toContain('示例:');
     });
   });
-}); 
+});

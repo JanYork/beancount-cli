@@ -1,6 +1,6 @@
 /**
  * Beancount CLI 核心类型定义
- * 
+ *
  * 作者: JanYork
  */
 
@@ -107,4 +107,4 @@ export interface BeancountEntry {
   meta?: Record<string, any>;
   /** 其他属性 */
   [key: string]: any;
-} 
+}

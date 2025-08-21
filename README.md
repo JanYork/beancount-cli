@@ -23,22 +23,26 @@
 ### 安装步骤
 
 1. 克隆仓库
+
 ```bash
 git clone https://github.com/janyork/beancount-cli.git
 cd beancount-cli
 ```
 
 2. 安装依赖
+
 ```bash
 npm install
 ```
 
 3. 构建项目
+
 ```bash
 npm run build
 ```
 
 4. 全局安装（可选）
+
 ```bash
 npm install -g .
 ```
@@ -72,16 +76,19 @@ beancount-cli /path/to/your/beancount/file.beancount
 ### 命令示例
 
 #### 添加交易记录
+
 ```bash
 /add_transaction date=2024-01-01 narration="午餐" postings=[{"account":"Expenses:Food","amount":25},{"account":"Assets:Cash","amount":-25}]
 ```
 
 #### 查看交易记录
+
 ```bash
 /list_transactions start_date=2024-01-01 end_date=2024-01-31
 ```
 
 #### 查看账户余额
+
 ```bash
 /show_balance account="Assets:Cash" date=2024-01-01
 ```
@@ -124,6 +131,7 @@ npm run clean
 ### 测试覆盖率
 
 项目要求100%的测试覆盖率，包括：
+
 - 分支覆盖率 (branches): 100%
 - 函数覆盖率 (functions): 100%
 - 行覆盖率 (lines): 100%
@@ -162,7 +170,8 @@ JanYork
 ## 更新日志
 
 ### v1.0.0
+
 - 初始版本发布
 - 支持基本的beancount操作
 - 完整的命令行界面
-- 100%测试覆盖率 
+- 100%测试覆盖率

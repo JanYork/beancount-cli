@@ -1,6 +1,6 @@
 /**
  * 配置管理器测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -26,25 +26,25 @@ describe('ConfigManager', () => {
   beforeEach(() => {
     // 清除所有mock
     jest.clearAllMocks();
-    
+
     // Mock os.homedir
     mockOs.homedir.mockReturnValue(mockHomeDir);
-    
+
     // Mock path.join
     mockPath.join.mockReturnValue(mockConfigPath);
-    
+
     // Mock fs.existsSync
     mockFs.existsSync.mockReturnValue(false);
-    
+
     // Mock fs.mkdirSync
     mockFs.mkdirSync.mockImplementation(() => undefined);
-    
+
     // Mock fs.writeFileSync
     mockFs.writeFileSync.mockImplementation(() => undefined);
-    
+
     // 清除单例实例
     (ConfigManager as any).instance = undefined;
-    
+
     configManager = ConfigManager.getInstance();
   });
 
@@ -52,7 +52,7 @@ describe('ConfigManager', () => {
     it('should return singleton instance', () => {
       const instance1 = ConfigManager.getInstance();
       const instance2 = ConfigManager.getInstance();
-      
+
       expect(instance1).toBe(instance2);
     });
   });
@@ -60,7 +60,7 @@ describe('ConfigManager', () => {
   describe('getConfig', () => {
     it('should return default configuration', () => {
       const config = configManager.getConfig();
-      
+
       expect(config.data.default_file).toBe('/mock/home/.beancount-cli/config.yaml');
       expect(config.currency.default).toBe('CNY');
       expect(config.ui.language).toBe('zh-CN');
@@ -103,7 +103,7 @@ describe('ConfigManager', () => {
       expect(value).toBe('dark');
     });
 
-    it('should create nested objects if they don\'t exist', () => {
+    it("should create nested objects if they don't exist", () => {
       configManager.set('custom.new.key', 'value');
       const value = configManager.get('custom.new.key');
       expect(value).toBe('value');
@@ -111,17 +111,17 @@ describe('ConfigManager', () => {
   });
 
   describe('saveConfig', () => {
-    it('should create config directory if it doesn\'t exist', () => {
+    it("should create config directory if it doesn't exist", () => {
       mockFs.existsSync.mockReturnValue(false);
-      
+
       configManager.saveConfig();
-      
+
       expect(mockFs.mkdirSync).toHaveBeenCalledWith(undefined, { recursive: true });
     });
 
     it('should write config to file', () => {
       configManager.saveConfig();
-      
+
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(mockConfigPath, expect.any(String), 'utf8');
     });
 
@@ -129,7 +129,7 @@ describe('ConfigManager', () => {
       mockFs.writeFileSync.mockImplementation(() => {
         throw new Error('Write error');
       });
-      
+
       // Should not throw error
       expect(() => configManager.saveConfig()).not.toThrow();
     });
@@ -158,7 +158,7 @@ describe('ConfigManager', () => {
   describe('validateConfig', () => {
     it('should return valid for correct config', () => {
       const result = configManager.validateConfig();
-      
+
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
@@ -166,7 +166,7 @@ describe('ConfigManager', () => {
     it('should return invalid for missing default file', () => {
       configManager.set('data.default_file', '');
       const result = configManager.validateConfig();
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('缺少默认beancount文件路径配置');
     });
@@ -174,7 +174,7 @@ describe('ConfigManager', () => {
     it('should return invalid for missing default currency', () => {
       configManager.set('currency.default', '');
       const result = configManager.validateConfig();
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('缺少默认货币配置');
     });
@@ -182,7 +182,7 @@ describe('ConfigManager', () => {
     it('should return invalid for unsupported currency', () => {
       configManager.set('currency.default', 'INVALID');
       const result = configManager.validateConfig();
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('默认货币不在支持的货币列表中');
     });
@@ -192,28 +192,28 @@ describe('ConfigManager', () => {
     it('should convert simple config to YAML', () => {
       const config = { key: 'value' };
       const yaml = (configManager as any).configToYaml(config);
-      
+
       expect(yaml).toContain('key: value');
     });
 
     it('should convert nested config to YAML', () => {
-      const config = { 
-        section: { 
-          subsection: 'value' 
-        } 
+      const config = {
+        section: {
+          subsection: 'value',
+        },
       };
       const yaml = (configManager as any).configToYaml(config);
-      
+
       expect(yaml).toContain('section:');
       expect(yaml).toContain('  subsection: value');
     });
 
     it('should convert array config to YAML', () => {
-      const config = { 
-        items: ['item1', 'item2'] 
+      const config = {
+        items: ['item1', 'item2'],
       };
       const yaml = (configManager as any).configToYaml(config);
-      
+
       expect(yaml).toContain('items:');
       expect(yaml).toContain('  - item1');
       expect(yaml).toContain('  - item2');
@@ -224,21 +224,21 @@ describe('ConfigManager', () => {
     it('should parse simple YAML', () => {
       const yaml = 'key: value';
       const config = (configManager as any).yamlToConfig(yaml);
-      
+
       expect(config.key).toBe('value');
     });
 
     it('should parse YAML with comments', () => {
       const yaml = '# comment\nkey: value';
       const config = (configManager as any).yamlToConfig(yaml);
-      
+
       expect(config.key).toBe('value');
     });
 
     it('should parse YAML with arrays', () => {
       const yaml = 'items:\n  - item1\n  - item2';
       const config = (configManager as any).yamlToConfig(yaml);
-      
+
       // 由于我们的简化YAML解析器不支持数组，我们期望它是一个对象
       expect(typeof config.items).toBe('object');
       expect(config.items).toBeDefined();
@@ -247,8 +247,8 @@ describe('ConfigManager', () => {
     it('should handle empty YAML', () => {
       const yaml = '';
       const config = (configManager as any).yamlToConfig(yaml);
-      
+
       expect(config).toEqual({});
     });
   });
-}); 
+});

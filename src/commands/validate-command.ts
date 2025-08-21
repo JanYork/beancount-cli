@@ -1,6 +1,6 @@
 /**
  * 验证beancount文件命令
- * 
+ *
  * 作者: JanYork
  */
 
@@ -18,7 +18,7 @@ export class ValidateCommand extends BaseCommand {
 
   /**
    * 执行验证命令
-   * 
+   *
    * @param _params 命令参数
    * @returns 执行结果
    */
@@ -29,7 +29,8 @@ export class ValidateCommand extends BaseCommand {
       const errorCount = stats['totalErrors'] || 0;
 
       if (errorCount === 0) {
-        const result = `✅ ${chalk.green.bold('文件验证通过!')}\n\n` +
+        const result =
+          `✅ ${chalk.green.bold('文件验证通过!')}\n\n` +
           `📊 验证结果:\n` +
           `  ${chalk.green('•')} 语法正确\n` +
           `  ${chalk.green('•')} 账户平衡\n` +
@@ -37,7 +38,8 @@ export class ValidateCommand extends BaseCommand {
 
         return this.createSuccessResult(result, { valid: true, errors: [] });
       } else {
-        let result = `❌ ${chalk.red.bold('文件验证失败!')}\n\n` +
+        const result =
+          `❌ ${chalk.red.bold('文件验证失败!')}\n\n` +
           `📊 发现 ${errorCount} 个错误\n\n` +
           `💡 建议: 请检查文件中的错误并修复后重新验证`;
 
@@ -50,7 +52,7 @@ export class ValidateCommand extends BaseCommand {
 
   /**
    * 获取命令帮助信息
-   * 
+   *
    * @returns 帮助信息
    */
   getHelp(): string {
@@ -70,4 +72,4 @@ export class ValidateCommand extends BaseCommand {
 /validate
     `;
   }
-} 
+}

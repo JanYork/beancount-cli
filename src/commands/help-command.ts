@@ -1,6 +1,6 @@
 /**
  * 帮助命令
- * 
+ *
  * 作者: JanYork
  */
 
@@ -10,7 +10,7 @@ import chalk from 'chalk';
 export class HelpCommand extends BaseCommand {
   /**
    * 执行帮助命令
-   * 
+   *
    * @param params 命令参数
    * @returns 执行结果
    */
@@ -69,7 +69,7 @@ ${chalk.blue.bold('📝 提示:')}
 
   /**
    * 获取命令帮助信息
-   * 
+   *
    * @returns 帮助信息
    */
   getHelp(): string {
@@ -85,4 +85,4 @@ ${chalk.blue.bold('📝 提示:')}
 /help command="add_transaction"
     `;
   }
-} 
+}

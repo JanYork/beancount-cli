@@ -1,6 +1,6 @@
 /**
  * 列出交易记录命令
- * 
+ *
  * 作者: JanYork
  */
 
@@ -18,7 +18,7 @@ export class ListTransactionsCommand extends BaseCommand {
 
   /**
    * 执行列出交易记录命令
-   * 
+   *
    * @param params 命令参数
    * @returns 执行结果
    */
@@ -65,7 +65,7 @@ export class ListTransactionsCommand extends BaseCommand {
         if (transaction) {
           const dateStr = format(transaction.date, 'yyyy-MM-dd');
           result += `${i + 1}. ${dateStr} - ${transaction.narration}\n`;
-          
+
           if (transaction.payee) {
             result += `   收款人: ${transaction.payee}\n`;
           }
@@ -95,7 +95,7 @@ export class ListTransactionsCommand extends BaseCommand {
 
   /**
    * 获取命令帮助信息
-   * 
+   *
    * @returns 帮助信息
    */
   getHelp(): string {
@@ -113,4 +113,4 @@ export class ListTransactionsCommand extends BaseCommand {
 /list_transactions start_date=2024-01-01 end_date=2024-01-31
     `;
   }
-} 
+}

@@ -1,6 +1,6 @@
 /**
  * 命令工厂
- * 
+ *
  * 作者: JanYork
  */
 
@@ -18,34 +18,37 @@ import { HelpCommand } from './help-command';
 export class CommandFactory {
   /**
    * 创建命令实例
-   * 
+   *
    * @param commandName 命令名称
    * @param engine Beancount引擎实例
    * @returns 命令实例或null
    */
   static createCommand(commandName: string, engine: BeancountEngine): BaseCommand | null {
-    const commands: Record<string, new (engine: BeancountEngine) => BaseCommand> = {
-      'add_transaction': AddTransactionCommand,
-      'list_transactions': ListTransactionsCommand,
-      'show_balance': ShowBalanceCommand,
-      'show_networth': ShowNetworthCommand,
-      'list_accounts': ListAccountsCommand,
-      'validate': ValidateCommand,
-      'config': ConfigCommand,
-      'help': HelpCommand
-    };
-
-    const CommandClass = commands[commandName];
-    if (CommandClass) {
-      return new CommandClass(engine);
+    switch (commandName) {
+      case 'add_transaction':
+        return new AddTransactionCommand(engine);
+      case 'list_transactions':
+        return new ListTransactionsCommand(engine);
+      case 'show_balance':
+        return new ShowBalanceCommand(engine);
+      case 'show_networth':
+        return new ShowNetworthCommand(engine);
+      case 'list_accounts':
+        return new ListAccountsCommand(engine);
+      case 'validate':
+        return new ValidateCommand(engine);
+      case 'config':
+        return new ConfigCommand();
+      case 'help':
+        return new HelpCommand();
+      default:
+        return null;
     }
-
-    return null;
   }
 
   /**
    * 获取所有可用命令名称
-   * 
+   *
    * @returns 命令名称数组
    */
   static getAvailableCommands(): string[] {
@@ -59,17 +62,17 @@ export class CommandFactory {
       'config',
       'help',
       'reload',
-      'quit'
+      'quit',
     ];
   }
 
   /**
    * 检查命令是否存在
-   * 
+   *
    * @param commandName 命令名称
    * @returns 是否存在
    */
   static isCommandAvailable(commandName: string): boolean {
     return this.getAvailableCommands().includes(commandName);
   }
-} 
+}

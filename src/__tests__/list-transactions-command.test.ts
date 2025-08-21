@@ -1,6 +1,6 @@
 /**
  * 列出交易命令测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -16,7 +16,7 @@ describe('ListTransactionsCommand', () => {
 
   beforeEach(() => {
     mockEngine = {
-      getTransactions: jest.fn()
+      getTransactions: jest.fn(),
     } as any;
     command = new ListTransactionsCommand(mockEngine);
   });
@@ -29,18 +29,16 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: [
             { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
           ],
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
 
       const result = command.execute({});
-      
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('找到 1 条交易记录');
@@ -54,15 +52,14 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: [
             { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
           ],
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
 
       const result = command.execute({ start_date: '2024-01-01' });
 
@@ -78,15 +75,14 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: [
             { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
           ],
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
 
       const result = command.execute({ end_date: '2024-01-31' });
 
@@ -102,27 +98,23 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: [
             { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
           ],
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
 
-      const result = command.execute({ 
-        start_date: '2024-01-01', 
-        end_date: '2024-01-31' 
+      const result = command.execute({
+        start_date: '2024-01-01',
+        end_date: '2024-01-31',
       });
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('找到 1 条交易记录');
-      expect(mockEngine.getTransactions).toHaveBeenCalledWith(
-        expect.any(Date), 
-        expect.any(Date)
-      );
+      expect(mockEngine.getTransactions).toHaveBeenCalledWith(expect.any(Date), expect.any(Date));
     });
 
     it('should handle invalid start date format', () => {
@@ -159,7 +151,6 @@ describe('ListTransactionsCommand', () => {
       mockEngine.getTransactions = jest.fn().mockReturnValue([]);
 
       const result = command.execute({});
-      
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('没有找到交易记录');
@@ -173,18 +164,16 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: [
             { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
           ],
           tags: ['food', 'lunch'],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
 
       const result = command.execute({});
-      
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('1. 2024-01-01 - 午餐');
@@ -201,18 +190,16 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: [
             { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
           ],
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
 
       const result = command.execute({});
-      
 
       expect(result.success).toBe(true);
       expect(result.message).not.toContain('收款人:');
@@ -225,18 +212,16 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: [
             { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+            { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
           ],
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
 
       const result = command.execute({});
-      
 
       expect(result.success).toBe(true);
       expect(result.message).not.toContain('标签:');
@@ -247,19 +232,15 @@ describe('ListTransactionsCommand', () => {
         {
           date: new Date('2024-01-01'),
           narration: '午餐',
-          postings: [
-            { account: 'Expenses:Food' }
-          ],
+          postings: [{ account: 'Expenses:Food' }],
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
 
       const result = command.execute({});
-      
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('1. 2024-01-01 - 午餐');
@@ -274,14 +255,14 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: null as any,
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
+
       const result = command.execute({});
-      
+
       expect(result.success).toBe(false);
       expect(result.message).toContain('列出交易记录失败');
     });
@@ -293,14 +274,14 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: undefined as any,
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
+
       const result = command.execute({});
-      
+
       expect(result.success).toBe(false);
       expect(result.message).toContain('列出交易记录失败');
     });
@@ -312,22 +293,20 @@ describe('ListTransactionsCommand', () => {
           narration: '午餐',
           postings: [],
           tags: [],
-          links: []
-        }
+          links: [],
+        },
       ];
 
       mockEngine.getTransactions = jest.fn().mockReturnValue(mockTransactions);
-      
+
       const result = command.execute({});
-      
+
       expect(result.success).toBe(true);
       expect(result.message).toContain('找到 1 条交易记录');
     });
 
     it('should handle transaction with null transaction', () => {
-      mockEngine.getTransactions = jest.fn().mockReturnValue([
-        null as any
-      ]);
+      mockEngine.getTransactions = jest.fn().mockReturnValue([null as any]);
 
       const result = command.execute({});
 
@@ -336,9 +315,7 @@ describe('ListTransactionsCommand', () => {
     });
 
     it('should handle transaction with undefined transaction', () => {
-      mockEngine.getTransactions = jest.fn().mockReturnValue([
-        undefined as any
-      ]);
+      mockEngine.getTransactions = jest.fn().mockReturnValue([undefined as any]);
 
       const result = command.execute({});
 
@@ -364,11 +341,11 @@ describe('ListTransactionsCommand', () => {
   describe('getHelp', () => {
     it('should return help text', () => {
       const help = command.getHelp();
-      
+
       expect(help).toContain('列出交易记录');
       expect(help).toContain('用法:');
       expect(help).toContain('参数:');
       expect(help).toContain('示例:');
     });
   });
-}); 
+});

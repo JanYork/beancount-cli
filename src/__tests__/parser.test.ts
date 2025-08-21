@@ -1,6 +1,6 @@
 /**
  * Beancount解析器测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -57,11 +57,7 @@ describe('BeancountParser', () => {
 
   describe('parseTransaction', () => {
     it('should parse transaction with flag', () => {
-      const result = (BeancountParser as any).parseTransaction(
-        '2024-01-01 * "午餐"',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseTransaction('2024-01-01 * "午餐"', new Date('2024-01-01'), 1);
 
       expect(result.type).toBe('transaction');
       expect(result.flag).toBe('*');
@@ -70,11 +66,7 @@ describe('BeancountParser', () => {
     });
 
     it('should parse transaction with payee and narration', () => {
-      const result = (BeancountParser as any).parseTransaction(
-        '2024-01-01 * 餐厅 "午餐"',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseTransaction('2024-01-01 * 餐厅 "午餐"', new Date('2024-01-01'), 1);
 
       expect(result.type).toBe('transaction');
       expect(result.payee).toBe('餐厅');
@@ -82,33 +74,21 @@ describe('BeancountParser', () => {
     });
 
     it('should parse transaction with exclamation flag', () => {
-      const result = (BeancountParser as any).parseTransaction(
-        '2024-01-01 ! "午餐"',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseTransaction('2024-01-01 ! "午餐"', new Date('2024-01-01'), 1);
 
       expect(result.type).toBe('transaction');
       expect(result.flag).toBe('!');
     });
 
     it('should handle transaction without narration', () => {
-      const result = (BeancountParser as any).parseTransaction(
-        '2024-01-01 *',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseTransaction('2024-01-01 *', new Date('2024-01-01'), 1);
 
       expect(result.type).toBe('transaction');
       expect(result.narration).toBe('');
     });
 
     it('should handle transaction with complex narration parsing', () => {
-      const result = (BeancountParser as any).parseTransaction(
-        '2024-01-01 * 餐厅 "午餐"',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseTransaction('2024-01-01 * 餐厅 "午餐"', new Date('2024-01-01'), 1);
 
       expect(result.type).toBe('transaction');
       expect(result.payee).toBe('餐厅');
@@ -116,11 +96,7 @@ describe('BeancountParser', () => {
     });
 
     it('should handle transaction with narration but no payee', () => {
-      const result = (BeancountParser as any).parseTransaction(
-        '2024-01-01 * "午餐"',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseTransaction('2024-01-01 * "午餐"', new Date('2024-01-01'), 1);
 
       expect(result.type).toBe('transaction');
       expect(result.payee).toBeUndefined();
@@ -130,22 +106,14 @@ describe('BeancountParser', () => {
 
   describe('parseAccount', () => {
     it('should parse open account', () => {
-      const result = (BeancountParser as any).parseAccount(
-        '2024-01-01 open Assets:Cash',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseAccount('2024-01-01 open Assets:Cash', new Date('2024-01-01'), 1);
 
       expect(result.type).toBe('open');
       expect(result.account).toBe('Assets:Cash');
     });
 
     it('should parse close account', () => {
-      const result = (BeancountParser as any).parseAccount(
-        '2024-01-01 close Assets:Cash',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseAccount('2024-01-01 close Assets:Cash', new Date('2024-01-01'), 1);
 
       expect(result.type).toBe('close');
       expect(result.account).toBe('Assets:Cash');
@@ -185,15 +153,11 @@ describe('BeancountParser', () => {
       );
 
       expect(result.type).toBe('balance');
-      expect(result.amount?.number).toBe(1000.50);
+      expect(result.amount?.number).toBe(1000.5);
     });
 
     it('should handle balance without amount', () => {
-      const result = (BeancountParser as any).parseBalance(
-        '2024-01-01 balance Assets:Cash',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseBalance('2024-01-01 balance Assets:Cash', new Date('2024-01-01'), 1);
 
       expect(result.type).toBe('balance');
       expect(result.amount).toBeUndefined();
@@ -213,71 +177,50 @@ describe('BeancountParser', () => {
 
   describe('parsePostings', () => {
     it('should parse postings from lines', () => {
-      const lines = [
-        '  Expenses:Food 25 CNY',
-        '  Assets:Cash -25 CNY'
-      ];
-      
+      const lines = ['  Expenses:Food 25 CNY', '  Assets:Cash -25 CNY'];
+
       const result = BeancountParser.parsePostings(lines, 1);
-      
+
       expect(result).toHaveLength(2);
       expect(result[0]?.account).toBe('Expenses:Food');
       expect(result[1]?.account).toBe('Assets:Cash');
     });
 
     it('should skip non-posting lines', () => {
-      const lines = [
-        '  Expenses:Food 25 CNY',
-        '2024-01-01 * "午餐"',
-        '  Assets:Cash -25 CNY'
-      ];
-      
+      const lines = ['  Expenses:Food 25 CNY', '2024-01-01 * "午餐"', '  Assets:Cash -25 CNY'];
+
       const result = BeancountParser.parsePostings(lines, 1);
-      
+
       expect(result).toHaveLength(2);
     });
 
     it('should skip comment lines', () => {
-      const lines = [
-        '  Expenses:Food 25 CNY',
-        '  ; 这是注释',
-        '  Assets:Cash -25 CNY'
-      ];
-      
+      const lines = ['  Expenses:Food 25 CNY', '  ; 这是注释', '  Assets:Cash -25 CNY'];
+
       const result = BeancountParser.parsePostings(lines, 1);
-      
+
       expect(result).toHaveLength(2);
     });
 
     it('should handle empty lines', () => {
-      const lines = [
-        '  Expenses:Food 25 CNY',
-        '',
-        '  Assets:Cash -25 CNY'
-      ];
-      
+      const lines = ['  Expenses:Food 25 CNY', '', '  Assets:Cash -25 CNY'];
+
       const result = BeancountParser.parsePostings(lines, 1);
-      
+
       expect(result).toHaveLength(2);
     });
   });
 
   describe('parsePostingLine', () => {
     it('should parse posting with account only', () => {
-      const result = (BeancountParser as any).parsePostingLine(
-        '  Expenses:Food',
-        1
-      );
+      const result = (BeancountParser as any).parsePostingLine('  Expenses:Food', 1);
 
       expect(result?.account).toBe('Expenses:Food');
       expect(result?.units).toBeUndefined();
     });
 
     it('should parse posting with account and amount', () => {
-      const result = (BeancountParser as any).parsePostingLine(
-        '  Expenses:Food 25 CNY',
-        1
-      );
+      const result = (BeancountParser as any).parsePostingLine('  Expenses:Food 25 CNY', 1);
 
       expect(result?.account).toBe('Expenses:Food');
       expect(result?.units?.number).toBe(25);
@@ -285,23 +228,17 @@ describe('BeancountParser', () => {
     });
 
     it('should parse posting with negative amount', () => {
-      const result = (BeancountParser as any).parsePostingLine(
-        '  Assets:Cash -25 CNY',
-        1
-      );
+      const result = (BeancountParser as any).parsePostingLine('  Assets:Cash -25 CNY', 1);
 
       expect(result?.account).toBe('Assets:Cash');
       expect(result?.units?.number).toBe(-25);
     });
 
     it('should parse posting with decimal amount', () => {
-      const result = (BeancountParser as any).parsePostingLine(
-        '  Expenses:Food 25.50 CNY',
-        1
-      );
+      const result = (BeancountParser as any).parsePostingLine('  Expenses:Food 25.50 CNY', 1);
 
       expect(result?.account).toBe('Expenses:Food');
-      expect(result?.units?.number).toBe(25.50);
+      expect(result?.units?.number).toBe(25.5);
     });
 
     it('should return null for empty line', () => {
@@ -315,10 +252,7 @@ describe('BeancountParser', () => {
     });
 
     it('should handle invalid amount format', () => {
-      const result = (BeancountParser as any).parsePostingLine(
-        '  Expenses:Food invalid',
-        1
-      );
+      const result = (BeancountParser as any).parsePostingLine('  Expenses:Food invalid', 1);
 
       expect(result?.account).toBe('Expenses:Food');
       expect(result?.units).toBeUndefined();
@@ -332,15 +266,15 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.formatTransaction(transaction);
-      
+
       expect(result).toContain('2024-01-01 * "午餐"');
       expect(result).toContain('Expenses:Food 25 CNY');
       expect(result).toContain('Assets:Cash -25 CNY');
@@ -354,11 +288,11 @@ describe('BeancountParser', () => {
         postings: [],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.formatTransaction(transaction);
-      
+
       expect(result).toContain('2024-01-01 * 餐厅 "午餐"');
     });
 
@@ -369,11 +303,11 @@ describe('BeancountParser', () => {
         postings: [],
         tags: ['food', 'lunch'],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.formatTransaction(transaction);
-      
+
       expect(result).toContain('#food');
       expect(result).toContain('#lunch');
     });
@@ -385,11 +319,11 @@ describe('BeancountParser', () => {
         postings: [],
         tags: [],
         links: ['receipt-001'],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.formatTransaction(transaction);
-      
+
       expect(result).toContain('^receipt-001');
     });
 
@@ -397,16 +331,14 @@ describe('BeancountParser', () => {
       const transaction: Transaction = {
         date: new Date('2024-01-01'),
         narration: '午餐',
-        postings: [
-          { account: 'Expenses:Food' }
-        ],
+        postings: [{ account: 'Expenses:Food' }],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.formatTransaction(transaction);
-      
+
       expect(result).toContain('Expenses:Food');
       expect(result).not.toContain('undefined');
     });
@@ -419,15 +351,15 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.validateTransaction(transaction);
-      
+
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
@@ -439,11 +371,11 @@ describe('BeancountParser', () => {
         postings: [],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.validateTransaction(transaction);
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('交易描述不能为空');
     });
@@ -455,11 +387,11 @@ describe('BeancountParser', () => {
         postings: [],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.validateTransaction(transaction);
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('交易描述不能为空');
     });
@@ -471,11 +403,11 @@ describe('BeancountParser', () => {
         postings: [],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.validateTransaction(transaction);
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('至少需要一个分录');
     });
@@ -484,16 +416,14 @@ describe('BeancountParser', () => {
       const transaction: Transaction = {
         date: new Date('2024-01-01'),
         narration: '午餐',
-        postings: [
-          { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } }
-        ],
+        postings: [{ account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } }],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.validateTransaction(transaction);
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('借贷不平衡');
     });
@@ -504,15 +434,15 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25.001, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.validateTransaction(transaction);
-      
+
       expect(result.valid).toBe(true);
     });
 
@@ -520,17 +450,14 @@ describe('BeancountParser', () => {
       const transaction: Transaction = {
         date: new Date('2024-01-01'),
         narration: '午餐',
-        postings: [
-          { account: 'Expenses:Food' },
-          { account: 'Assets:Cash' }
-        ],
+        postings: [{ account: 'Expenses:Food' }, { account: 'Assets:Cash' }],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       const result = BeancountParser.validateTransaction(transaction);
-      
+
       expect(result.valid).toBe(true);
     });
 
@@ -567,7 +494,7 @@ describe('BeancountParser', () => {
       expect(posting.account).toBe('Expenses:Food');
       expect(posting.units).toEqual({
         number: 25,
-        currency: 'CNY'
+        currency: 'CNY',
       });
     });
 
@@ -577,13 +504,13 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: ['food', 'lunch'],
         links: ['receipt-001'],
-        meta: {}
+        meta: {},
       };
-      
+
       const formatted = BeancountParser.formatTransaction(transaction);
       expect(formatted).toContain('#food');
       expect(formatted).toContain('#lunch');
@@ -591,58 +518,34 @@ describe('BeancountParser', () => {
     });
 
     it('should handle transaction with payee and narration', () => {
-      const result = (BeancountParser as any).parseTransaction(
-        '2024-01-01 * 收款人 "午餐"',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseTransaction('2024-01-01 * 收款人 "午餐"', new Date('2024-01-01'), 1);
       expect(result.payee).toBe('收款人');
       expect(result.narration).toBe('午餐');
     });
 
     it('should handle transaction without payee', () => {
-      const result = (BeancountParser as any).parseTransaction(
-        '2024-01-01 * "午餐"',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseTransaction('2024-01-01 * "午餐"', new Date('2024-01-01'), 1);
       expect(result.payee).toBeUndefined();
       expect(result.narration).toBe('午餐');
     });
 
     it('should handle transaction with payee starting with quote', () => {
-      const result = (BeancountParser as any).parseTransaction(
-        '2024-01-01 * 收款人 "午餐"',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseTransaction('2024-01-01 * 收款人 "午餐"', new Date('2024-01-01'), 1);
       expect(result.payee).toBe('收款人');
     });
 
     it('should handle account with unknown action', () => {
-      const result = (BeancountParser as any).parseAccount(
-        '2024-01-01 unknown Assets:Cash',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseAccount('2024-01-01 unknown Assets:Cash', new Date('2024-01-01'), 1);
       expect(result.type).toBe('unknown');
     });
 
     it('should handle account with empty account name', () => {
-      const result = (BeancountParser as any).parseAccount(
-        '2024-01-01 open',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseAccount('2024-01-01 open', new Date('2024-01-01'), 1);
       expect(result.account).toBe('');
     });
 
     it('should handle balance without amount', () => {
-      const result = (BeancountParser as any).parseBalance(
-        '2024-01-01 balance Assets:Cash',
-        new Date('2024-01-01'),
-        1
-      );
+      const result = (BeancountParser as any).parseBalance('2024-01-01 balance Assets:Cash', new Date('2024-01-01'), 1);
       expect(result.amount).toBeUndefined();
     });
 
@@ -654,7 +557,7 @@ describe('BeancountParser', () => {
       );
       expect(result.amount).toEqual({
         number: 1000,
-        currency: 'CNY'
+        currency: 'CNY',
       });
     });
 
@@ -712,7 +615,11 @@ describe('BeancountParser', () => {
     });
 
     it('should handle parseBalance with amount', () => {
-      const result = (BeancountParser as any).parseBalance('2024-01-01 balance Assets:Cash 1000 CNY', new Date('2024-01-01'), 1);
+      const result = (BeancountParser as any).parseBalance(
+        '2024-01-01 balance Assets:Cash 1000 CNY',
+        new Date('2024-01-01'),
+        1
+      );
       expect(result.type).toBe('balance');
       expect(result.account).toBe('Assets:Cash');
       expect(result.amount).toEqual({ number: 1000, currency: 'CNY' });
@@ -736,13 +643,13 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: ['food', 'lunch'],
         links: ['receipt-001'],
-        meta: {}
+        meta: {},
       };
-      
+
       const result = BeancountParser.formatTransaction(transaction);
       expect(result).toContain('#food');
       expect(result).toContain('#lunch');
@@ -755,13 +662,13 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
-      
+
       const result = BeancountParser.formatTransaction(transaction);
       expect(result).toContain('2024-01-01 * "午餐"');
       expect(result).not.toContain('undefined');
@@ -773,13 +680,13 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
-      
+
       const result = BeancountParser.validateTransaction(transaction);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('交易日期不能为空');
@@ -791,13 +698,13 @@ describe('BeancountParser', () => {
         narration: '',
         postings: [
           { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
-      
+
       const result = BeancountParser.validateTransaction(transaction);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('交易描述不能为空');
@@ -810,9 +717,9 @@ describe('BeancountParser', () => {
         postings: [],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
-      
+
       const result = BeancountParser.validateTransaction(transaction);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('至少需要一个分录');
@@ -824,13 +731,13 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -20, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -20, currency: 'CNY' } },
         ],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
-      
+
       const result = BeancountParser.validateTransaction(transaction);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain('借贷不平衡');
@@ -842,13 +749,13 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
-      
+
       const result = BeancountParser.validateTransaction(transaction);
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -860,16 +767,16 @@ describe('BeancountParser', () => {
         narration: '午餐',
         postings: [
           { account: 'Expenses:Food', units: { number: 25.001, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } }
+          { account: 'Assets:Cash', units: { number: -25, currency: 'CNY' } },
         ],
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
-      
+
       const result = BeancountParser.validateTransaction(transaction);
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
   });
-}); 
+});

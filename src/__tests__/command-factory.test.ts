@@ -1,6 +1,6 @@
 /**
  * 命令工厂测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -10,8 +10,7 @@ import { CommandFactory } from '../commands/command-factory';
 jest.mock('../engine/beancount-engine');
 
 describe('CommandFactory', () => {
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   describe('createCommand', () => {
     it('should create add_transaction command', () => {
@@ -48,7 +47,7 @@ describe('CommandFactory', () => {
   describe('getAvailableCommands', () => {
     it('should return all available commands', () => {
       const commands = CommandFactory.getAvailableCommands();
-      
+
       expect(commands).toContain('add_transaction');
       expect(commands).toContain('list_transactions');
       expect(commands).toContain('show_balance');
@@ -58,7 +57,7 @@ describe('CommandFactory', () => {
       expect(commands).toContain('help');
       expect(commands).toContain('reload');
       expect(commands).toContain('quit');
-      
+
       expect(commands).toHaveLength(10);
     });
   });
@@ -85,4 +84,4 @@ describe('CommandFactory', () => {
       expect(CommandFactory.isCommandAvailable('')).toBe(false);
     });
   });
-}); 
+});

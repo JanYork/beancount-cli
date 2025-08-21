@@ -1,6 +1,6 @@
 /**
  * Beancount操作引擎
- * 
+ *
  * 作者: JanYork
  */
 
@@ -31,10 +31,10 @@ export class BeancountEngine {
 
       const content = readFileSync(this.filePath, 'utf-8');
       this.entries = BeancountParser.parseContent(content);
-      
+
       // 验证文件
       this.errors = this.validateFile();
-      
+
       if (this.errors.length > 0) {
         console.warn(`⚠️  加载文件时发现 ${this.errors.length} 个错误`);
       }
@@ -55,7 +55,7 @@ export class BeancountEngine {
    */
   public getAccounts(): Account[] {
     const accounts: Account[] = [];
-    
+
     for (const entry of this.entries) {
       if (entry.type === 'open') {
         const accountName = entry['account'];
@@ -65,13 +65,13 @@ export class BeancountEngine {
             name: accountName,
             type: accountType,
             openDate: entry.date,
-            meta: entry.meta || {}
+            meta: entry.meta || {},
           };
           accounts.push(account);
         }
       }
     }
-    
+
     return accounts;
   }
 
@@ -81,7 +81,7 @@ export class BeancountEngine {
   private getAccountType(accountName: string): AccountType {
     const parts = accountName.split(':');
     const rootAccount = parts[0]?.toUpperCase();
-    
+
     switch (rootAccount) {
       case 'ASSETS':
         return 'ASSETS';
@@ -103,7 +103,7 @@ export class BeancountEngine {
    */
   public getTransactions(startDate?: Date, endDate?: Date): Transaction[] {
     const transactions: Transaction[] = [];
-    
+
     for (const entry of this.entries) {
       if (entry.type === 'transaction') {
         // 检查日期范围
@@ -113,7 +113,7 @@ export class BeancountEngine {
         if (endDate && isAfter(entry.date, endOfDay(endDate))) {
           continue;
         }
-        
+
         // 构建交易记录
         const transaction: Transaction = {
           date: entry.date,
@@ -122,13 +122,13 @@ export class BeancountEngine {
           postings: this.getPostingsForTransaction(entry),
           tags: this.extractTags(entry),
           links: this.extractLinks(entry),
-          meta: entry.meta || {}
+          meta: entry.meta || {},
         };
-        
+
         transactions.push(transaction);
       }
     }
-    
+
     return transactions;
   }
 
@@ -141,7 +141,7 @@ export class BeancountEngine {
       return entry['postings'].map(posting => ({
         account: posting.account || '',
         units: posting.units,
-        meta: posting.meta || {}
+        meta: posting.meta || {},
       }));
     }
     return [];
@@ -179,7 +179,7 @@ export class BeancountEngine {
       date: transaction.date,
       payee: transaction.payee,
       narration: transaction.narration,
-      meta: { ...transaction.meta, tags: transaction.tags, links: transaction.links }
+      meta: { ...transaction.meta, tags: transaction.tags, links: transaction.links },
     };
 
     this.entries.push(entry);
@@ -192,9 +192,12 @@ export class BeancountEngine {
   public deleteTransaction(transactionDate: Date, narration: string): boolean {
     for (let i = 0; i < this.entries.length; i++) {
       const entry = this.entries[i];
-      if (entry && entry.type === 'transaction' && 
-          entry.date.getTime() === transactionDate.getTime() && 
-          entry['narration'] === narration) {
+      if (
+        entry &&
+        entry.type === 'transaction' &&
+        entry.date.getTime() === transactionDate.getTime() &&
+        entry['narration'] === narration
+      ) {
         this.entries.splice(i, 1);
         this.saveFile();
         return true;
@@ -209,24 +212,24 @@ export class BeancountEngine {
   public getBalances(account?: string, balanceDate?: Date): Balance[] {
     const balances: Balance[] = [];
     const targetDate = balanceDate || new Date();
-    
+
     for (const entry of this.entries) {
       if (entry.type === 'balance') {
         if (account && entry['account'] !== account) {
           continue;
         }
-        
+
         if (entry['amount'] && entry.date.getTime() <= targetDate.getTime()) {
           const balance: Balance = {
             account: entry['account'] || '',
             amount: entry['amount'],
-            date: entry.date
+            date: entry.date,
           };
           balances.push(balance);
         }
       }
     }
-    
+
     return balances;
   }
 
@@ -236,26 +239,26 @@ export class BeancountEngine {
   public getNetWorth(targetDate?: Date): Record<string, any> {
     const date = targetDate || new Date();
     const balances = this.getBalances(undefined, date);
-    
+
     let totalAssets = 0;
     let totalLiabilities = 0;
-    
+
     for (const balance of balances) {
       const accountType = this.getAccountType(balance.account);
       const amount = balance.amount.number;
-      
+
       if (accountType === 'ASSETS') {
         totalAssets += amount;
       } else if (accountType === 'LIABILITIES') {
         totalLiabilities += amount;
       }
     }
-    
+
     return {
       date: format(date, 'yyyy-MM-dd'),
       totalAssets,
       totalLiabilities,
-      netWorth: totalAssets - totalLiabilities
+      netWorth: totalAssets - totalLiabilities,
     };
   }
 
@@ -264,15 +267,15 @@ export class BeancountEngine {
    */
   public getIncomeStatement(startDate: Date, endDate: Date): Record<string, any> {
     const transactions = this.getTransactions(startDate, endDate);
-    
+
     let totalIncome = 0;
     let totalExpenses = 0;
-    
+
     for (const transaction of transactions) {
       for (const posting of transaction.postings) {
         const accountType = this.getAccountType(posting.account);
         const amount = posting.units?.number || 0;
-        
+
         if (accountType === 'INCOME') {
           totalIncome += amount;
         } else if (accountType === 'EXPENSES') {
@@ -280,13 +283,13 @@ export class BeancountEngine {
         }
       }
     }
-    
+
     return {
       startDate: format(startDate, 'yyyy-MM-dd'),
       endDate: format(endDate, 'yyyy-MM-dd'),
       totalIncome,
       totalExpenses,
-      netIncome: totalIncome - totalExpenses
+      netIncome: totalIncome - totalExpenses,
     };
   }
 
@@ -296,15 +299,15 @@ export class BeancountEngine {
   public getBalanceSheet(targetDate?: Date): Record<string, any> {
     const date = targetDate || new Date();
     const balances = this.getBalances(undefined, date);
-    
+
     const assets: Record<string, number> = {};
     const liabilities: Record<string, number> = {};
     const equity: Record<string, number> = {};
-    
+
     for (const balance of balances) {
       const accountType = this.getAccountType(balance.account);
       const amount = balance.amount.number;
-      
+
       switch (accountType) {
         case 'ASSETS':
           assets[balance.account] = amount;
@@ -317,12 +320,12 @@ export class BeancountEngine {
           break;
       }
     }
-    
+
     return {
       date: format(date, 'yyyy-MM-dd'),
       assets,
       liabilities,
-      equity
+      equity,
     };
   }
 
@@ -343,17 +346,17 @@ export class BeancountEngine {
    */
   private formatFileContent(): string {
     const lines: string[] = [];
-    
+
     for (const entry of this.entries) {
       if (entry.type === 'transaction') {
         const transaction: Transaction = {
           date: entry.date,
           payee: entry['payee'],
           narration: entry['narration'] || '',
-          postings: [],
+          postings: entry['postings'] || [],
           tags: [],
           links: [],
-          meta: entry.meta || {}
+          meta: entry.meta || {},
         };
         lines.push(BeancountParser.formatTransaction(transaction));
       } else if (entry.type === 'open' || entry.type === 'close') {
@@ -363,10 +366,10 @@ export class BeancountEngine {
         const dateStr = format(entry.date, 'yyyy-MM-dd');
         lines.push(`${dateStr} balance ${entry['account']} ${entry['amount'].number} ${entry['amount'].currency}`);
       }
-      
+
       lines.push(''); // 空行分隔
     }
-    
+
     return lines.join('\n');
   }
 
@@ -375,26 +378,26 @@ export class BeancountEngine {
    */
   private validateFile(): string[] {
     const errors: string[] = [];
-    
+
     for (const entry of this.entries) {
       if (entry.type === 'transaction') {
         const transaction: Transaction = {
           date: entry.date,
           payee: entry['payee'],
           narration: entry['narration'] || '',
-          postings: [],
+          postings: entry['postings'] || [],
           tags: [],
           links: [],
-          meta: entry.meta || {}
+          meta: entry.meta || {},
         };
-        
+
         const validation = BeancountParser.validateTransaction(transaction);
         if (!validation.valid) {
           errors.push(...validation.errors);
         }
       }
     }
-    
+
     return errors;
   }
 
@@ -405,13 +408,13 @@ export class BeancountEngine {
     const accounts = this.getAccounts();
     const transactions = this.getTransactions();
     const balances = this.getBalances();
-    
+
     return {
       totalAccounts: accounts.length,
       totalTransactions: transactions.length,
       totalBalances: balances.length,
       totalErrors: this.errors.length,
-      filePath: this.filePath
+      filePath: this.filePath,
     };
   }
-} 
+}

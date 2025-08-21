@@ -1,12 +1,14 @@
 /**
  * 显示余额命令
- * 
+ *
  * 作者: JanYork
  */
 
 import { parse } from 'date-fns';
 import { BaseCommand } from './base-command';
 import { BeancountEngine } from '../engine/beancount-engine';
+import { t, getLanguage } from '../utils/i18n';
+import { AccountTranslator } from '../utils/account-translator';
 
 export class ShowBalanceCommand extends BaseCommand {
   private engine: BeancountEngine;
@@ -18,7 +20,7 @@ export class ShowBalanceCommand extends BaseCommand {
 
   /**
    * 执行显示余额命令
-   * 
+   *
    * @param params 命令参数
    * @returns 执行结果
    */
@@ -32,10 +34,10 @@ export class ShowBalanceCommand extends BaseCommand {
         try {
           balanceDate = parse(dateStr, 'yyyy-MM-dd', new Date());
           if (isNaN(balanceDate.getTime())) {
-            return this.createErrorResult('日期格式错误');
+            return this.createErrorResult(t('balance.date.format.error'));
           }
         } catch (error) {
-          return this.createErrorResult('日期格式错误');
+          return this.createErrorResult(t('balance.date.format.error'));
         }
       }
 
@@ -43,29 +45,56 @@ export class ShowBalanceCommand extends BaseCommand {
       const balances = this.engine.getBalances(account, balanceDate);
 
       if (balances.length === 0) {
-        return this.createSuccessResult('💰 没有找到余额信息');
+        return this.createSuccessResult(t('balance.no.data'));
       }
 
-      // 格式化输出
-      let result = `💰 账户余额信息:\n\n`;
+      // 格式化输出 - 用户友好的界面
+      let result = `${t('balance.title')}\n\n`;
+
+      // 按货币分组
+      const currencyGroups: Record<string, { accounts: string[]; total: number }> = {};
+      const currentLanguage = getLanguage();
 
       for (const balance of balances) {
         const amount = balance.amount.number;
         const currency = balance.amount.currency;
+
+        if (!currencyGroups[currency]) {
+          currencyGroups[currency] = { accounts: [], total: 0 };
+        }
+
         const sign = amount >= 0 ? '+' : '';
-        
-        result += `📊 ${balance.account}: ${sign}${amount} ${currency}\n`;
+        const formattedAmount = `${sign}${amount.toLocaleString()}`;
+
+        // 翻译账户名称
+        const translatedAccount = AccountTranslator.translateAccount(balance.account, currentLanguage);
+        currencyGroups[currency].accounts.push(`${translatedAccount}: ${formattedAmount}`);
+        currencyGroups[currency].total += amount;
+      }
+
+      // 按货币显示
+      for (const [currency, group] of Object.entries(currencyGroups)) {
+        result += `${t('balance.currency', { currency })}\n`;
+
+        for (const accountInfo of group.accounts) {
+          result += `   ${accountInfo}\n`;
+        }
+
+        const totalSign = group.total >= 0 ? '+' : '';
+        const totalFormatted = `${totalSign}${group.total.toLocaleString()}`;
+        result += `   ─────────────────\n`;
+        result += `   ${t('balance.total')}: ${totalFormatted} ${currency}\n\n`;
       }
 
       return this.createSuccessResult(result, balances);
     } catch (error) {
-      return this.createErrorResult(`显示余额失败: ${error}`);
+      return this.createErrorResult(`${t('balance.display.error')} ${error}`);
     }
   }
 
   /**
    * 获取命令帮助信息
-   * 
+   *
    * @returns 帮助信息
    */
   getHelp(): string {
@@ -84,4 +113,4 @@ export class ShowBalanceCommand extends BaseCommand {
 /show_balance account="Assets:Cash" date=2024-01-01
     `;
   }
-} 
+}

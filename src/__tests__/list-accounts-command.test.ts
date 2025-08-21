@@ -1,6 +1,6 @@
 /**
  * 列出账户命令测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -17,12 +17,12 @@ describe('ListAccountsCommand', () => {
   beforeEach(() => {
     // 清除所有mock
     jest.clearAllMocks();
-    
+
     // 创建mock实例
     mockEngine = {
-      getAccounts: jest.fn()
+      getAccounts: jest.fn(),
     } as any;
-    
+
     command = new ListAccountsCommand(mockEngine);
   });
 
@@ -31,7 +31,7 @@ describe('ListAccountsCommand', () => {
       const mockAccounts = [
         { name: 'Assets:Cash', type: 'ASSETS' as any, openDate: new Date(), meta: {} },
         { name: 'Expenses:Food', type: 'EXPENSES' as any, openDate: new Date(), meta: {} },
-        { name: 'Income:Salary', type: 'INCOME' as any, openDate: new Date(), meta: {} }
+        { name: 'Income:Salary', type: 'INCOME' as any, openDate: new Date(), meta: {} },
       ];
       mockEngine.getAccounts.mockReturnValue(mockAccounts);
 
@@ -60,7 +60,7 @@ describe('ListAccountsCommand', () => {
       const mockAccounts = [
         { name: 'Assets:Cash', type: 'ASSETS' as any, openDate: new Date(), meta: {} },
         { name: 'Liabilities:Credit', type: 'LIABILITIES' as any, openDate: new Date(), meta: {} },
-        { name: 'Equity:Opening', type: 'EQUITY' as any, openDate: new Date(), meta: {} }
+        { name: 'Equity:Opening', type: 'EQUITY' as any, openDate: new Date(), meta: {} },
       ];
       mockEngine.getAccounts.mockReturnValue(mockAccounts);
 
@@ -73,9 +73,7 @@ describe('ListAccountsCommand', () => {
     });
 
     it('should handle unknown account types', () => {
-      const mockAccounts = [
-        { name: 'Unknown:Account', type: 'UNKNOWN' as any, openDate: new Date(), meta: {} }
-      ];
+      const mockAccounts = [{ name: 'Unknown:Account', type: 'UNKNOWN' as any, openDate: new Date(), meta: {} }];
       mockEngine.getAccounts.mockReturnValue(mockAccounts);
 
       const result = command.execute({});
@@ -139,4 +137,4 @@ describe('ListAccountsCommand', () => {
       expect(result).toBe('❓ 其他账户');
     });
   });
-}); 
+});

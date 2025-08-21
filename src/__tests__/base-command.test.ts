@@ -1,6 +1,6 @@
 /**
  * 基础命令类测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -55,7 +55,7 @@ describe('BaseCommand', () => {
   describe('createSuccessResult', () => {
     it('should create success result with message only', () => {
       const result = testCommand.testCreateSuccessResult('Success message');
-      
+
       expect(result.success).toBe(true);
       expect(result.message).toBe('Success message');
       expect(result.data).toBeUndefined();
@@ -64,7 +64,7 @@ describe('BaseCommand', () => {
     it('should create success result with message and data', () => {
       const data = { key: 'value' };
       const result = testCommand.testCreateSuccessResult('Success message', data);
-      
+
       expect(result.success).toBe(true);
       expect(result.message).toBe('Success message');
       expect(result.data).toEqual(data);
@@ -74,7 +74,7 @@ describe('BaseCommand', () => {
   describe('createErrorResult', () => {
     it('should create error result with message only', () => {
       const result = testCommand.testCreateErrorResult('Error message');
-      
+
       expect(result.success).toBe(false);
       expect(result.message).toBe('Error message');
       expect(result.data).toBeUndefined();
@@ -83,7 +83,7 @@ describe('BaseCommand', () => {
     it('should create error result with message and data', () => {
       const data = { errorCode: 500 };
       const result = testCommand.testCreateErrorResult('Error message', data);
-      
+
       expect(result.success).toBe(false);
       expect(result.message).toBe('Error message');
       expect(result.data).toEqual(data);
@@ -94,7 +94,7 @@ describe('BaseCommand', () => {
     it('should execute command and return result', () => {
       const params = { test: 'value' };
       const result = testCommand.execute(params);
-      
+
       expect(result.success).toBe(true);
       expect(result.message).toBe('Test executed successfully');
       expect(result.data).toEqual(params);
@@ -107,4 +107,4 @@ describe('BaseCommand', () => {
       expect(help).toBe('Test command help');
     });
   });
-}); 
+});

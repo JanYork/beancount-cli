@@ -1,6 +1,6 @@
 /**
  * 类型定义测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -11,7 +11,7 @@ describe('Types', () => {
     it('should create account with required fields', () => {
       const account: Account = {
         name: 'Assets:Cash',
-        type: 'ASSETS'
+        type: 'ASSETS',
       };
 
       expect(account.name).toBe('Assets:Cash');
@@ -26,7 +26,7 @@ describe('Types', () => {
         description: '银行账户',
         openDate: new Date('2024-01-01'),
         closeDate: new Date('2024-12-31'),
-        meta: { currency: 'CNY' }
+        meta: { currency: 'CNY' },
       };
 
       expect(account.parent).toBe('Assets');
@@ -40,11 +40,11 @@ describe('Types', () => {
   describe('Amount', () => {
     it('should create amount with number and currency', () => {
       const amount: Amount = {
-        number: 100.50,
-        currency: 'CNY'
+        number: 100.5,
+        currency: 'CNY',
       };
 
-      expect(amount.number).toBe(100.50);
+      expect(amount.number).toBe(100.5);
       expect(amount.currency).toBe('CNY');
     });
   });
@@ -52,7 +52,7 @@ describe('Types', () => {
   describe('Posting', () => {
     it('should create posting with required fields', () => {
       const posting: Posting = {
-        account: 'Assets:Cash'
+        account: 'Assets:Cash',
       };
 
       expect(posting.account).toBe('Assets:Cash');
@@ -61,14 +61,14 @@ describe('Types', () => {
     it('should create posting with optional fields', () => {
       const posting: Posting = {
         account: 'Expenses:Food',
-        units: { number: 25.00, currency: 'CNY' },
+        units: { number: 25.0, currency: 'CNY' },
         cost: null,
-        price: { number: 1.00, currency: 'CNY' },
+        price: { number: 1.0, currency: 'CNY' },
         flag: '*',
-        meta: { category: 'dining' }
+        meta: { category: 'dining' },
       };
 
-      expect(posting.units?.number).toBe(25.00);
+      expect(posting.units?.number).toBe(25.0);
       expect(posting.price?.currency).toBe('CNY');
       expect(posting.flag).toBe('*');
       expect(posting.meta?.['category']).toBe('dining');
@@ -82,7 +82,7 @@ describe('Types', () => {
         narration: '午餐',
         postings: [],
         tags: [],
-        links: []
+        links: [],
       };
 
       expect(transaction.date).toEqual(new Date('2024-01-01'));
@@ -98,12 +98,12 @@ describe('Types', () => {
         payee: '餐厅',
         narration: '午餐',
         postings: [
-          { account: 'Expenses:Food', units: { number: 25.00, currency: 'CNY' } },
-          { account: 'Assets:Cash', units: { number: -25.00, currency: 'CNY' } }
+          { account: 'Expenses:Food', units: { number: 25.0, currency: 'CNY' } },
+          { account: 'Assets:Cash', units: { number: -25.0, currency: 'CNY' } },
         ],
         tags: ['food', 'lunch'],
         links: ['receipt-001'],
-        meta: { location: 'office' }
+        meta: { location: 'office' },
       };
 
       expect(transaction.payee).toBe('餐厅');
@@ -118,12 +118,12 @@ describe('Types', () => {
     it('should create balance with all fields', () => {
       const balance: Balance = {
         account: 'Assets:Cash',
-        amount: { number: 1000.00, currency: 'CNY' },
-        date: new Date('2024-01-01')
+        amount: { number: 1000.0, currency: 'CNY' },
+        date: new Date('2024-01-01'),
       };
 
       expect(balance.account).toBe('Assets:Cash');
-      expect(balance.amount.number).toBe(1000.00);
+      expect(balance.amount.number).toBe(1000.0);
       expect(balance.amount.currency).toBe('CNY');
       expect(balance.date).toEqual(new Date('2024-01-01'));
     });
@@ -133,7 +133,7 @@ describe('Types', () => {
     it('should create entry with basic fields', () => {
       const entry: BeancountEntry = {
         type: 'transaction',
-        date: new Date('2024-01-01')
+        date: new Date('2024-01-01'),
       };
 
       expect(entry.type).toBe('transaction');
@@ -146,7 +146,7 @@ describe('Types', () => {
         date: new Date('2024-01-01'),
         payee: '商店',
         narration: '购物',
-        meta: { category: 'shopping' }
+        meta: { category: 'shopping' },
       };
 
       expect(entry['payee']).toBe('商店');
@@ -158,7 +158,7 @@ describe('Types', () => {
   describe('AccountType', () => {
     it('should have correct account types', () => {
       const types: AccountType[] = ['ASSETS', 'LIABILITIES', 'EQUITY', 'INCOME', 'EXPENSES'];
-      
+
       expect(types).toContain('ASSETS');
       expect(types).toContain('LIABILITIES');
       expect(types).toContain('EQUITY');
@@ -166,4 +166,4 @@ describe('Types', () => {
       expect(types).toContain('EXPENSES');
     });
   });
-}); 
+});

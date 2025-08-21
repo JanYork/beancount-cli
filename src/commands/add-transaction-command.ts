@@ -1,6 +1,6 @@
 /**
  * 添加交易记录命令
- * 
+ *
  * 作者: JanYork
  */
 
@@ -20,7 +20,7 @@ export class AddTransactionCommand extends BaseCommand {
 
   /**
    * 执行添加交易记录命令
-   * 
+   *
    * @param params 命令参数
    * @returns 执行结果
    */
@@ -53,7 +53,7 @@ export class AddTransactionCommand extends BaseCommand {
       for (const postingData of postingsData) {
         const account = postingData.account as string;
         const amount = postingData.amount as number;
-        const currency = postingData.currency as string || 'CNY';
+        const currency = (postingData.currency as string) || 'CNY';
 
         if (!account || amount === undefined) {
           continue;
@@ -63,8 +63,8 @@ export class AddTransactionCommand extends BaseCommand {
           account,
           units: {
             number: amount,
-            currency
-          }
+            currency,
+          },
         };
         postings.push(posting);
       }
@@ -81,7 +81,7 @@ export class AddTransactionCommand extends BaseCommand {
         postings,
         tags: [],
         links: [],
-        meta: {}
+        meta: {},
       };
 
       // 添加到引擎
@@ -93,7 +93,8 @@ export class AddTransactionCommand extends BaseCommand {
       const sign = totalAmount >= 0 ? '+' : '';
       const color = totalAmount >= 0 ? chalk.green : chalk.red;
 
-      const result = `✅ 成功添加交易记录!\n\n` +
+      const result =
+        `✅ 成功添加交易记录!\n\n` +
         `📅 日期: ${chalk.cyan(formattedDate)}\n` +
         `📝 描述: ${chalk.yellow(narration)}\n` +
         `💰 总金额: ${color(`${sign}${totalAmount} CNY`)}\n` +
@@ -107,7 +108,7 @@ export class AddTransactionCommand extends BaseCommand {
 
   /**
    * 获取命令帮助信息
-   * 
+   *
    * @returns 帮助信息
    */
   getHelp(): string {
@@ -128,7 +129,7 @@ export class AddTransactionCommand extends BaseCommand {
 
   /**
    * 验证参数
-   * 
+   *
    * @param params 参数
    * @returns 验证结果
    */
@@ -161,4 +162,4 @@ export class AddTransactionCommand extends BaseCommand {
 
     return { valid: errors.length === 0, errors };
   }
-} 
+}

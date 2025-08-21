@@ -1,6 +1,6 @@
 /**
  * 显示净资产命令测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -17,12 +17,12 @@ describe('ShowNetworthCommand', () => {
   beforeEach(() => {
     // 清除所有mock
     jest.clearAllMocks();
-    
+
     // 创建mock实例
     mockEngine = {
-      getNetWorth: jest.fn()
+      getNetWorth: jest.fn(),
     } as any;
-    
+
     command = new ShowNetworthCommand(mockEngine);
   });
 
@@ -31,7 +31,7 @@ describe('ShowNetworthCommand', () => {
       const mockNetWorth = {
         assets: 10000,
         liabilities: 2000,
-        netWorth: 8000
+        netWorth: 8000,
       };
       mockEngine.getNetWorth.mockReturnValue(mockNetWorth);
 
@@ -51,7 +51,7 @@ describe('ShowNetworthCommand', () => {
       const mockNetWorth = {
         assets: 5000,
         liabilities: 1000,
-        netWorth: 4000
+        netWorth: 4000,
       };
       mockEngine.getNetWorth.mockReturnValue(mockNetWorth);
 
@@ -81,7 +81,7 @@ describe('ShowNetworthCommand', () => {
       const mockNetWorth = {
         assets: 1000,
         liabilities: 3000,
-        netWorth: -2000
+        netWorth: -2000,
       };
       mockEngine.getNetWorth.mockReturnValue(mockNetWorth);
 
@@ -95,7 +95,7 @@ describe('ShowNetworthCommand', () => {
       const mockNetWorth = {
         assets: 0,
         liabilities: 0,
-        netWorth: 0
+        netWorth: 0,
       };
       mockEngine.getNetWorth.mockReturnValue(mockNetWorth);
 
@@ -109,9 +109,9 @@ describe('ShowNetworthCommand', () => {
 
     it('should handle decimal values', () => {
       const mockNetWorth = {
-        assets: 1000.50,
+        assets: 1000.5,
         liabilities: 200.25,
-        netWorth: 800.25
+        netWorth: 800.25,
       };
       mockEngine.getNetWorth.mockReturnValue(mockNetWorth);
 
@@ -146,4 +146,4 @@ describe('ShowNetworthCommand', () => {
       expect(help).toContain('示例:');
     });
   });
-}); 
+});

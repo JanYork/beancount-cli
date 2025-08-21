@@ -15,22 +15,22 @@ describe('BeancountCLI', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock console.log to suppress output during tests
     jest.spyOn(console, 'log').mockImplementation(() => {});
-    
+
     // Mock engine instance
     mockEngine = {
       getFileStats: jest.fn(),
       reload: jest.fn(),
     } as any;
-    
+
     mockBeancountEngine.mockImplementation(() => mockEngine);
-    
+
     // Mock inquirer
     const mockInquirer = require('inquirer');
     mockInquirer.prompt = jest.fn();
-    
+
     cli = new BeancountCLI('test.beancount');
   });
 
@@ -43,14 +43,14 @@ describe('BeancountCLI', () => {
   describe('printBanner', () => {
     it('应该打印欢迎横幅', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       // 使用反射调用私有方法
       (cli as any).printBanner();
-      
+
       expect(consoleSpy).toHaveBeenCalledWith();
       expect(consoleSpy).toHaveBeenCalledWith('🤖  Beancount CLI');
       expect(consoleSpy).toHaveBeenCalledWith('    智能记账命令行工具');
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -62,15 +62,15 @@ describe('BeancountCLI', () => {
         totalTransactions: 100,
         totalBalances: 10,
         totalErrors: 0,
-        filePath: 'test.beancount'
+        filePath: 'test.beancount',
       };
-      
+
       mockEngine.getFileStats.mockReturnValue(mockStats);
-      
+
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       (cli as any).printStatus();
-      
+
       expect(mockEngine.getFileStats).toHaveBeenCalled();
       expect(consoleSpy).toHaveBeenCalledWith('📊 文件状态:');
       expect(consoleSpy).toHaveBeenCalledWith('   账户数量: 5');
@@ -78,7 +78,7 @@ describe('BeancountCLI', () => {
       expect(consoleSpy).toHaveBeenCalledWith('   余额记录: 10');
       expect(consoleSpy).toHaveBeenCalledWith('   错误数量: 0');
       expect(consoleSpy).toHaveBeenCalledWith('   文件路径: test.beancount');
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -86,13 +86,13 @@ describe('BeancountCLI', () => {
       mockEngine.getFileStats.mockImplementation(() => {
         throw new Error('File not found');
       });
-      
+
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       (cli as any).printStatus();
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('⚠️  无法获取状态信息');
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -102,47 +102,47 @@ describe('BeancountCLI', () => {
       const mockUserInput = 'help';
       const mockInquirer = require('inquirer');
       mockInquirer.prompt.mockResolvedValue({ userInput: mockUserInput });
-      
+
       const processCommandSpy = jest.spyOn(cli as any, 'processCommand');
-      
+
       await (cli as any).showPrompt();
-      
+
       expect(mockInquirer.prompt).toHaveBeenCalledWith([
         {
           type: 'input',
           name: 'userInput',
           message: '💡 输入命令 (输入 /help 查看帮助):',
-          default: ''
-        }
+          default: '',
+        },
       ]);
       expect(processCommandSpy).toHaveBeenCalledWith(mockUserInput);
-      
+
       processCommandSpy.mockRestore();
     });
 
     it('应该忽略空的用户输入', async () => {
       const mockInquirer = require('inquirer');
       mockInquirer.prompt.mockResolvedValue({ userInput: '' });
-      
+
       const processCommandSpy = jest.spyOn(cli as any, 'processCommand');
-      
+
       await (cli as any).showPrompt();
-      
+
       expect(processCommandSpy).not.toHaveBeenCalled();
-      
+
       processCommandSpy.mockRestore();
     });
 
     it('应该忽略只包含空格的用户输入', async () => {
       const mockInquirer = require('inquirer');
       mockInquirer.prompt.mockResolvedValue({ userInput: '   ' });
-      
+
       const processCommandSpy = jest.spyOn(cli as any, 'processCommand');
-      
+
       await (cli as any).showPrompt();
-      
+
       expect(processCommandSpy).not.toHaveBeenCalled();
-      
+
       processCommandSpy.mockRestore();
     });
   });
@@ -155,104 +155,104 @@ describe('BeancountCLI', () => {
 
     it('应该处理quit命令', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       await (cli as any).processCommand('quit');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('👋 再见！');
-      
+
       consoleSpy.mockRestore();
     });
 
     it('应该处理help命令（无参数）', async () => {
       const mockHelpCommand = {
-        execute: jest.fn().mockReturnValue({ success: true, message: '帮助信息' })
+        execute: jest.fn().mockReturnValue({ success: true, message: '帮助信息' }),
       } as any;
-      
+
       jest.spyOn(CommandFactory, 'createCommand').mockReturnValue(mockHelpCommand);
-      
+
       const displayResultSpy = jest.spyOn(cli as any, 'displayResult');
-      
+
       await (cli as any).processCommand('help');
-      
+
       expect(CommandFactory.createCommand).toHaveBeenCalledWith('help', mockEngine);
       expect(mockHelpCommand.execute).toHaveBeenCalledWith({});
       expect(displayResultSpy).toHaveBeenCalledWith({ success: true, message: '帮助信息' });
-      
+
       displayResultSpy.mockRestore();
     });
 
     it('应该处理help命令（带命令参数）', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       await (cli as any).processCommand('help add');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('添加交易记录。用法: /add 账户 金额 [描述]');
-      
+
       consoleSpy.mockRestore();
     });
 
     it('应该处理help命令（未知命令）', async () => {
       const handleErrorSpy = jest.spyOn(cli as any, 'handleError');
-      
+
       await (cli as any).processCommand('help unknown');
-      
+
       expect(handleErrorSpy).toHaveBeenCalledWith('未知命令: unknown');
-      
+
       handleErrorSpy.mockRestore();
     });
 
     it('应该处理reload命令', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
       const printStatusSpy = jest.spyOn(cli as any, 'printStatus');
-      
+
       await (cli as any).processCommand('reload');
-      
+
       expect(mockEngine.reload).toHaveBeenCalled();
       expect(consoleSpy).toHaveBeenCalledWith('🔄 文件重新加载成功');
       expect(printStatusSpy).toHaveBeenCalled();
-      
+
       consoleSpy.mockRestore();
       printStatusSpy.mockRestore();
     });
 
     it('应该处理其他命令', async () => {
       const mockCommand = {
-        execute: jest.fn().mockReturnValue({ success: true, message: '命令执行成功' })
+        execute: jest.fn().mockReturnValue({ success: true, message: '命令执行成功' }),
       } as any;
-      
+
       jest.spyOn(CommandFactory, 'createCommand').mockReturnValue(mockCommand);
-      
+
       const displayResultSpy = jest.spyOn(cli as any, 'displayResult');
-      
+
       await (cli as any).processCommand('add');
-      
+
       expect(CommandFactory.createCommand).toHaveBeenCalledWith('add', mockEngine);
       expect(mockCommand.execute).toHaveBeenCalledWith({});
       expect(displayResultSpy).toHaveBeenCalledWith({ success: true, message: '命令执行成功' });
-      
+
       displayResultSpy.mockRestore();
     });
 
     it('应该处理未知命令', async () => {
       // 使用一个有效的命令名，但CommandFactory返回null
       jest.spyOn(CommandFactory, 'createCommand').mockReturnValue(null);
-      
+
       const handleErrorSpy = jest.spyOn(cli as any, 'handleError');
-      
+
       await (cli as any).processCommand('add');
-      
+
       expect(handleErrorSpy).toHaveBeenCalledWith('未知命令: add');
-      
+
       handleErrorSpy.mockRestore();
     });
 
     it('应该处理无效命令', async () => {
       const handleErrorSpy = jest.spyOn(cli as any, 'handleError');
-      
+
       await (cli as any).processCommand('invalid');
-      
+
       expect(handleErrorSpy).toHaveBeenCalledWith('无效的命令: invalid');
-      
+
       handleErrorSpy.mockRestore();
     });
   });
@@ -260,55 +260,55 @@ describe('BeancountCLI', () => {
   describe('displayResult', () => {
     it('应该显示成功结果', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const result = {
         success: true,
         message: '操作成功',
-        data: { id: 1 }
+        data: { id: 1 },
       };
-      
+
       (cli as any).displayResult(result);
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('✅ 执行成功:');
       expect(consoleSpy).toHaveBeenCalledWith('操作成功');
       expect(consoleSpy).toHaveBeenCalledWith('数据:', { id: 1 });
-      
+
       consoleSpy.mockRestore();
     });
 
     it('应该显示失败结果', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const result = {
         success: false,
         message: '操作失败',
-        data: { error: '详细错误' }
+        data: { error: '详细错误' },
       };
-      
+
       (cli as any).displayResult(result);
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('❌ 执行失败:');
       expect(consoleSpy).toHaveBeenCalledWith('操作失败');
       expect(consoleSpy).toHaveBeenCalledWith('错误详情:', { error: '详细错误' });
-      
+
       consoleSpy.mockRestore();
     });
 
     it('应该处理没有数据的结果', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const result = {
         success: true,
-        message: '操作成功'
+        message: '操作成功',
       };
-      
+
       (cli as any).displayResult(result);
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('✅ 执行成功:');
       expect(consoleSpy).toHaveBeenCalledWith('操作成功');
       // 不应该调用数据相关的日志
       expect(consoleSpy).not.toHaveBeenCalledWith('数据:', expect.anything());
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -316,12 +316,12 @@ describe('BeancountCLI', () => {
   describe('handleError', () => {
     it('应该处理错误信息', () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       (cli as any).handleError('测试错误');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('❌ 错误:', '测试错误');
       expect(consoleSpy).toHaveBeenCalledWith();
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -331,18 +331,18 @@ describe('BeancountCLI', () => {
       const printBannerSpy = jest.spyOn(cli as any, 'printBanner');
       const printStatusSpy = jest.spyOn(cli as any, 'printStatus');
       const showPromptSpy = jest.spyOn(cli as any, 'showPrompt');
-      
+
       // Mock running为false来退出循环
       Object.defineProperty(cli as any, 'running', {
         get: jest.fn().mockReturnValue(false),
-        set: jest.fn()
+        set: jest.fn(),
       });
-      
+
       await cli.run();
-      
+
       expect(printBannerSpy).toHaveBeenCalled();
       expect(printStatusSpy).toHaveBeenCalled();
-      
+
       printBannerSpy.mockRestore();
       printStatusSpy.mockRestore();
       showPromptSpy.mockRestore();
@@ -352,36 +352,36 @@ describe('BeancountCLI', () => {
       // Mock running为false来退出循环
       Object.defineProperty(cli as any, 'running', {
         get: jest.fn().mockReturnValue(false),
-        set: jest.fn()
+        set: jest.fn(),
       });
-      
+
       // 直接测试错误处理逻辑
       const handleErrorSpy = jest.spyOn(cli as any, 'handleError');
-      
+
       // 模拟一个SIGINT错误
       const error = new Error('SIGINT');
       error.message = 'SIGINT';
-      
+
       // 直接调用错误处理
       (cli as any).handleError(`发生未预期的错误: ${error}`);
-      
+
       expect(handleErrorSpy).toHaveBeenCalledWith('发生未预期的错误: Error: SIGINT');
-      
+
       handleErrorSpy.mockRestore();
     });
 
     it('应该处理未预期的错误', async () => {
       // 直接测试错误处理逻辑
       const handleErrorSpy = jest.spyOn(cli as any, 'handleError');
-      
+
       // 模拟一个未预期错误
       const error = new Error('未预期错误');
-      
+
       // 直接调用错误处理
       (cli as any).handleError(`发生未预期的错误: ${error}`);
-      
+
       expect(handleErrorSpy).toHaveBeenCalledWith('发生未预期的错误: Error: 未预期错误');
-      
+
       handleErrorSpy.mockRestore();
     });
   });
@@ -406,7 +406,7 @@ describe('CommandParser', () => {
       expect(result.command).toBe('add');
       expect(result.params).toEqual({
         account: 'test',
-        amount: 100
+        amount: 100,
       });
     });
 
@@ -414,7 +414,7 @@ describe('CommandParser', () => {
       const result = CommandParser.parseCommand('add test 100 description');
       expect(result.command).toBe('add');
       expect(result.params).toEqual({
-        args: ['test', '100', 'description']
+        args: ['test', '100', 'description'],
       });
     });
 
@@ -434,7 +434,7 @@ describe('CommandParser', () => {
       const result = CommandParser.parseCommand('add key=');
       expect(result.command).toBe('add');
       expect(result.params).toEqual({
-        key: 0
+        key: 0,
       });
     });
   });
@@ -442,7 +442,7 @@ describe('CommandParser', () => {
   describe('validateCommand', () => {
     it('应该验证有效命令', () => {
       const validCommands = ['help', 'add', 'list', 'balance', 'quit', 'reload'];
-      
+
       validCommands.forEach(cmd => {
         expect(CommandParser.validateCommand(cmd)).toBe(true);
       });
@@ -450,7 +450,7 @@ describe('CommandParser', () => {
 
     it('应该拒绝无效命令', () => {
       const invalidCommands = ['unknown', 'test', 'invalid', ''];
-      
+
       invalidCommands.forEach(cmd => {
         expect(CommandParser.validateCommand(cmd)).toBe(false);
       });
@@ -480,4 +480,4 @@ describe('main function', () => {
       require('../cli');
     }).not.toThrow();
   });
-}); 
+});

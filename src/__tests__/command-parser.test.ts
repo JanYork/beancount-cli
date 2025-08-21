@@ -1,116 +1,113 @@
 /**
  * 命令解析器测试
- * 
+ *
  * 作者: JanYork
  */
 
 import { CommandParser } from '../utils/command-parser';
 
-
 describe('CommandParser', () => {
   describe('parseCommand', () => {
     it('should parse command without parameters', () => {
       const result = CommandParser.parseCommand('/help');
-      
+
       expect(result.command).toBe('help');
       expect(result.params).toEqual({});
     });
 
     it('should parse command with simple parameters', () => {
       const result = CommandParser.parseCommand('/show_balance account="Assets:Cash"');
-      
+
       expect(result.command).toBe('show_balance');
       expect(result.params).toEqual({
-        account: 'Assets:Cash'
+        account: 'Assets:Cash',
       });
     });
 
     it('should parse command with multiple parameters', () => {
       const result = CommandParser.parseCommand('/add_transaction date=2024-01-01 narration="午餐"');
-      
+
       expect(result.command).toBe('add_transaction');
       expect(result.params).toEqual({
         date: '2024-01-01',
-        narration: '午餐'
+        narration: '午餐',
       });
     });
 
     it('should parse command with array parameters', () => {
       const result = CommandParser.parseCommand('/add_transaction postings=[{"account":"Expenses:Food","amount":25}]');
-      
+
       expect(result.command).toBe('add_transaction');
-      expect(result.params['postings']).toEqual([
-        { account: 'Expenses:Food', amount: 25 }
-      ]);
+      expect(result.params['postings']).toEqual([{ account: 'Expenses:Food', amount: 25 }]);
     });
 
     it('should parse command with nested object parameters', () => {
-      const result = CommandParser.parseCommand('/add_transaction postings=[{"account":"Expenses:Food","amount":25,"currency":"CNY"}]');
-      
+      const result = CommandParser.parseCommand(
+        '/add_transaction postings=[{"account":"Expenses:Food","amount":25,"currency":"CNY"}]'
+      );
+
       expect(result.command).toBe('add_transaction');
-      expect(result.params['postings']).toEqual([
-        { account: 'Expenses:Food', amount: 25, currency: 'CNY' }
-      ]);
+      expect(result.params['postings']).toEqual([{ account: 'Expenses:Food', amount: 25, currency: 'CNY' }]);
     });
 
     it('should parse command with boolean parameters', () => {
       const result = CommandParser.parseCommand('/validate strict=true verbose=false');
-      
+
       expect(result.command).toBe('validate');
       expect(result.params).toEqual({
         strict: true,
-        verbose: false
+        verbose: false,
       });
     });
 
     it('should parse command with numeric parameters', () => {
       const result = CommandParser.parseCommand('/show_balance limit=100 offset=0');
-      
+
       expect(result.command).toBe('show_balance');
       expect(result.params).toEqual({
         limit: 100,
-        offset: 0
+        offset: 0,
       });
     });
 
     it('should parse command with float parameters', () => {
       const result = CommandParser.parseCommand('/add_transaction amount=25.50');
-      
+
       expect(result.command).toBe('add_transaction');
       expect(result.params).toEqual({
-        amount: 25.5
+        amount: 25.5,
       });
     });
 
     it('should parse command with negative numbers', () => {
       const result = CommandParser.parseCommand('/add_transaction amount=-25');
-      
+
       expect(result.command).toBe('add_transaction');
       expect(result.params).toEqual({
-        amount: -25
+        amount: -25,
       });
     });
 
     it('should handle command without leading slash', () => {
       const result = CommandParser.parseCommand('help');
-      
+
       expect(result.command).toBe('help');
       expect(result.params).toEqual({});
     });
 
     it('should handle empty input', () => {
       const result = CommandParser.parseCommand('');
-      
+
       expect(result.command).toBe('');
       expect(result.params).toEqual({});
     });
 
     it('should handle whitespace in parameters', () => {
       const result = CommandParser.parseCommand('/add_transaction narration="  午餐  "');
-      
+
       expect(result.command).toBe('add_transaction');
       expect(result.params).toEqual({
-        narration: '  午餐  '
+        narration: '  午餐  ',
       });
     });
   });
@@ -126,7 +123,7 @@ describe('CommandParser', () => {
         'validate',
         'help',
         'reload',
-        'quit'
+        'quit',
       ];
 
       for (const command of validCommands) {
@@ -135,13 +132,7 @@ describe('CommandParser', () => {
     });
 
     it('should reject invalid commands', () => {
-      const invalidCommands = [
-        'invalid_command',
-        'add',
-        'show',
-        'list',
-        'unknown'
-      ];
+      const invalidCommands = ['invalid_command', 'add', 'show', 'list', 'unknown'];
 
       for (const command of invalidCommands) {
         expect(CommandParser.validateCommand(command)).toBe(false);
@@ -174,7 +165,7 @@ describe('CommandParser', () => {
         'show_networth',
         'list_accounts',
         'validate',
-        'reload'
+        'reload',
       ];
 
       for (const command of validCommands) {
@@ -188,21 +179,21 @@ describe('CommandParser', () => {
   describe('edge cases', () => {
     it('should handle malformed JSON in parameters', () => {
       const result = CommandParser.parseCommand('/add_transaction postings=[{"account":"Expenses:Food","amount":25,}]');
-      
+
       expect(result.command).toBe('add_transaction');
       expect(result.params['postings']).toBeDefined();
     });
 
     it('should handle parameters with special characters', () => {
       const result = CommandParser.parseCommand('/add_transaction narration="特殊字符: !@#$%^&*()"');
-      
+
       expect(result.command).toBe('add_transaction');
       expect(result.params['narration']).toBe('特殊字符: !@#$%^&*()');
     });
 
     it('should handle parameters with newlines', () => {
       const result = CommandParser.parseCommand('/add_transaction narration="多行\n描述"');
-      
+
       expect(result.command).toBe('add_transaction');
       expect(result.params['narration']).toBe('多行\n描述');
     });
@@ -210,7 +201,7 @@ describe('CommandParser', () => {
     it('should handle empty currentPart in parsing', () => {
       // Test case where currentPart is empty after trimming
       const result = CommandParser.parseCommand('/help');
-      
+
       expect(result.command).toBe('help');
       expect(result.params).toEqual({});
     });
@@ -218,7 +209,7 @@ describe('CommandParser', () => {
     it('should handle JSON parse errors gracefully', () => {
       // Test case where JSON.parse fails and falls back to parseSimpleList
       const result = CommandParser.parseCommand('/add_transaction postings=[invalid-json]');
-      
+
       expect(result.command).toBe('add_transaction');
       expect(result.params['postings']).toBeDefined();
     });
@@ -267,7 +258,9 @@ describe('CommandParser', () => {
     });
 
     it('should handle parameters with nested braces', () => {
-      const result = CommandParser.parseCommand('/add_transaction postings=[{"account":"Expenses:Food","meta":{"tag":"food"}}]');
+      const result = CommandParser.parseCommand(
+        '/add_transaction postings=[{"account":"Expenses:Food","meta":{"tag":"food"}}]'
+      );
       expect(result.command).toBe('add_transaction');
       expect(result.params['postings']).toBeDefined();
     });
@@ -345,7 +338,7 @@ describe('CommandParser', () => {
     });
 
     it('should handle parseSimpleList with single quote', () => {
-      const result = CommandParser.parseCommand('/add_transaction items=[\'hello\']');
+      const result = CommandParser.parseCommand("/add_transaction items=['hello']");
       expect(result.command).toBe('add_transaction');
       expect(result.params['items']).toEqual(["'hello'"]);
     });
@@ -422,4 +415,4 @@ describe('CommandParser', () => {
       expect(result.params['items']).toBeDefined();
     });
   });
-}); 
+});

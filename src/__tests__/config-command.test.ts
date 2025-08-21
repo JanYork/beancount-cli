@@ -1,6 +1,6 @@
 /**
  * 配置命令测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -17,7 +17,7 @@ describe('ConfigCommand', () => {
   beforeEach(() => {
     // 清除所有mock
     jest.clearAllMocks();
-    
+
     // 创建mock实例
     mockConfigManager = {
       getConfig: jest.fn(),
@@ -27,12 +27,12 @@ describe('ConfigCommand', () => {
       reloadConfig: jest.fn(),
       validateConfig: jest.fn(),
       getConfigPath: jest.fn(),
-      expandPath: jest.fn()
+      expandPath: jest.fn(),
     } as any;
 
     // Mock getInstance方法
     (ConfigManager.getInstance as jest.Mock).mockReturnValue(mockConfigManager);
-    
+
     command = new ConfigCommand();
   });
 
@@ -43,10 +43,16 @@ describe('ConfigCommand', () => {
         currency: { default: 'CNY', supported: [] },
         accounts: { default_prefix: '', templates: { assets: [], expenses: [], income: [] } },
         ui: { language: '', theme: '', show_emoji: false, show_colors: false, output_format: '' },
-        features: { auto_backup: false, backup_frequency: '', enable_validation: false, auto_exchange_rate: false, enable_templates: false },
+        features: {
+          auto_backup: false,
+          backup_frequency: '',
+          enable_validation: false,
+          auto_exchange_rate: false,
+          enable_templates: false,
+        },
         security: { encrypt_sensitive: false, hash_algorithm: '', session_timeout: 0 },
         logging: { level: '', file: '', console: false, max_size: 0, max_files: 0 },
-        plugins: { enabled: false, directory: '', auto_load: false }
+        plugins: { enabled: false, directory: '', auto_load: false },
       } as any;
       mockConfigManager.getConfig.mockReturnValue(mockConfig);
 
@@ -78,10 +84,10 @@ describe('ConfigCommand', () => {
     });
 
     it('should set config value', () => {
-      const result = command.execute({ 
-        action: 'set', 
-        key: 'currency.default', 
-        value: 'USD' 
+      const result = command.execute({
+        action: 'set',
+        key: 'currency.default',
+        value: 'USD',
       });
 
       expect(result.success).toBe(true);
@@ -143,10 +149,10 @@ describe('ConfigCommand', () => {
     });
 
     it('should parse numeric values correctly', () => {
-      const result = command.execute({ 
-        action: 'set', 
-        key: 'logging.max_size', 
-        value: '20' 
+      const result = command.execute({
+        action: 'set',
+        key: 'logging.max_size',
+        value: '20',
       });
 
       expect(result.success).toBe(true);
@@ -154,10 +160,10 @@ describe('ConfigCommand', () => {
     });
 
     it('should parse boolean values correctly', () => {
-      const result = command.execute({ 
-        action: 'set', 
-        key: 'ui.show_emoji', 
-        value: 'false' 
+      const result = command.execute({
+        action: 'set',
+        key: 'ui.show_emoji',
+        value: 'false',
       });
 
       expect(result.success).toBe(true);
@@ -176,4 +182,4 @@ describe('ConfigCommand', () => {
       expect(help).toContain('示例:');
     });
   });
-}); 
+});

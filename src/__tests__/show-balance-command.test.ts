@@ -1,6 +1,6 @@
 /**
  * 显示余额命令测试
- * 
+ *
  * 作者: JanYork
  */
 
@@ -25,8 +25,8 @@ describe('ShowBalanceCommand', () => {
         {
           account: 'Assets:Cash',
           amount: { number: 1000, currency: 'CNY' },
-          date: new Date('2024-01-01')
-        }
+          date: new Date('2024-01-01'),
+        },
       ];
 
       mockEngine.getBalances = jest.fn().mockReturnValue(mockBalances);
@@ -43,8 +43,8 @@ describe('ShowBalanceCommand', () => {
         {
           account: 'Assets:Cash',
           amount: { number: 1000, currency: 'CNY' },
-          date: new Date('2024-01-01')
-        }
+          date: new Date('2024-01-01'),
+        },
       ];
 
       mockEngine.getBalances = jest.fn().mockReturnValue(mockBalances);
@@ -61,8 +61,8 @@ describe('ShowBalanceCommand', () => {
         {
           account: 'Assets:Cash',
           amount: { number: 1000, currency: 'CNY' },
-          date: new Date('2024-01-01')
-        }
+          date: new Date('2024-01-01'),
+        },
       ];
 
       mockEngine.getBalances = jest.fn().mockReturnValue(mockBalances);
@@ -79,23 +79,20 @@ describe('ShowBalanceCommand', () => {
         {
           account: 'Assets:Cash',
           amount: { number: 1000, currency: 'CNY' },
-          date: new Date('2024-01-01')
-        }
+          date: new Date('2024-01-01'),
+        },
       ];
 
       mockEngine.getBalances = jest.fn().mockReturnValue(mockBalances);
 
-      const result = command.execute({ 
-        account: 'Assets:Cash', 
-        date: '2024-01-01' 
+      const result = command.execute({
+        account: 'Assets:Cash',
+        date: '2024-01-01',
       });
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('账户余额信息');
-      expect(mockEngine.getBalances).toHaveBeenCalledWith(
-        'Assets:Cash', 
-        expect.any(Date)
-      );
+      expect(mockEngine.getBalances).toHaveBeenCalledWith('Assets:Cash', expect.any(Date));
     });
 
     it('should handle invalid date format', () => {
@@ -127,13 +124,13 @@ describe('ShowBalanceCommand', () => {
         {
           account: 'Assets:Cash',
           amount: { number: 1000, currency: 'CNY' },
-          date: new Date('2024-01-01')
+          date: new Date('2024-01-01'),
         },
         {
           account: 'Assets:Bank',
           amount: { number: 5000, currency: 'CNY' },
-          date: new Date('2024-01-01')
-        }
+          date: new Date('2024-01-01'),
+        },
       ];
 
       mockEngine.getBalances = jest.fn().mockReturnValue(mockBalances);
@@ -150,8 +147,8 @@ describe('ShowBalanceCommand', () => {
         {
           account: 'Liabilities:Credit',
           amount: { number: -1000, currency: 'CNY' },
-          date: new Date('2024-01-01')
-        }
+          date: new Date('2024-01-01'),
+        },
       ];
 
       mockEngine.getBalances = jest.fn().mockReturnValue(mockBalances);
@@ -166,9 +163,9 @@ describe('ShowBalanceCommand', () => {
       const mockBalances = [
         {
           account: 'Assets:Cash',
-          amount: { number: 1000.50, currency: 'CNY' },
-          date: new Date('2024-01-01')
-        }
+          amount: { number: 1000.5, currency: 'CNY' },
+          date: new Date('2024-01-01'),
+        },
       ];
 
       mockEngine.getBalances = jest.fn().mockReturnValue(mockBalances);
@@ -184,18 +181,18 @@ describe('ShowBalanceCommand', () => {
         {
           account: 'Assets:Cash',
           amount: { number: 1000, currency: 'CNY' },
-          date: new Date('2024-01-01')
+          date: new Date('2024-01-01'),
         },
         {
           account: 'Assets:Bank',
           amount: { number: 5000, currency: 'CNY' },
-          date: new Date('2024-01-01')
+          date: new Date('2024-01-01'),
         },
         {
           account: 'Liabilities:Credit',
           amount: { number: -2000, currency: 'CNY' },
-          date: new Date('2024-01-01')
-        }
+          date: new Date('2024-01-01'),
+        },
       ];
 
       mockEngine.getBalances = jest.fn().mockReturnValue(mockBalances);
@@ -226,11 +223,11 @@ describe('ShowBalanceCommand', () => {
   describe('getHelp', () => {
     it('should return help text', () => {
       const help = command.getHelp();
-      
+
       expect(help).toContain('显示账户余额');
       expect(help).toContain('用法:');
       expect(help).toContain('参数:');
       expect(help).toContain('示例:');
     });
   });
-}); 
+});
