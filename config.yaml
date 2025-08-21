@@ -1,0 +1,89 @@
+# Beancount CLI 配置文件
+# 作者: JanYork
+
+# 数据路径配置
+data:
+  # 默认beancount文件路径
+  default_file: "~/beancount/main.beancount"
+  # 数据目录
+  data_dir: "~/beancount/data"
+  # 备份目录
+  backup_dir: "~/beancount/backups"
+  # 导出目录
+  export_dir: "~/beancount/exports"
+
+# 货币配置
+currency:
+  # 默认货币
+  default: "CNY"
+  # 支持的货币列表
+  supported: ["CNY", "USD", "EUR", "JPY", "GBP"]
+  # 汇率API (可选)
+  exchange_rate_api: "https://api.exchangerate-api.com/v4/latest/CNY"
+
+# 账户配置
+accounts:
+  # 默认账户前缀
+  default_prefix: "Assets:"
+  # 常用账户模板
+  templates:
+    assets: ["Assets:Cash", "Assets:Bank", "Assets:Investment"]
+    expenses: ["Expenses:Food", "Expenses:Transport", "Expenses:Shopping"]
+    income: ["Income:Salary", "Income:Investment", "Income:Other"]
+
+# 界面配置
+ui:
+  # 语言 (zh-CN, en-US)
+  language: "zh-CN"
+  # 主题颜色
+  theme: "default"
+  # 是否显示emoji
+  show_emoji: true
+  # 是否显示颜色
+  show_colors: true
+  # 输出格式 (table, json, csv)
+  output_format: "table"
+
+# 功能配置
+features:
+  # 是否启用自动备份
+  auto_backup: true
+  # 备份频率 (daily, weekly, monthly)
+  backup_frequency: "weekly"
+  # 是否启用数据验证
+  enable_validation: true
+  # 是否启用自动汇率转换
+  auto_exchange_rate: false
+  # 是否启用交易模板
+  enable_templates: true
+
+# 安全配置
+security:
+  # 是否加密敏感数据
+  encrypt_sensitive: false
+  # 密码哈希算法
+  hash_algorithm: "sha256"
+  # 会话超时时间(分钟)
+  session_timeout: 30
+
+# 日志配置
+logging:
+  # 日志级别 (debug, info, warn, error)
+  level: "info"
+  # 日志文件路径
+  file: "~/beancount/logs/cli.log"
+  # 是否记录到控制台
+  console: true
+  # 最大日志文件大小(MB)
+  max_size: 10
+  # 保留日志文件数量
+  max_files: 5
+
+# 插件配置
+plugins:
+  # 是否启用插件系统
+  enabled: false
+  # 插件目录
+  directory: "~/beancount/plugins"
+  # 自动加载插件
+  auto_load: false 
