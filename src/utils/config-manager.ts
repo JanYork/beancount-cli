@@ -7,6 +7,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import * as yaml from 'js-yaml';
 import { setLanguage, Language } from './i18n';
 
 // Mock chalk for testing compatibility
@@ -179,8 +180,12 @@ export class ConfigManager {
         fs.mkdirSync(configDir, { recursive: true });
       }
 
-      // 将配置转换为YAML格式（简化版本）
-      const yamlContent = this.configToYaml(this.config);
+      // 使用 js-yaml 将配置转换为YAML格式
+      const yamlContent = yaml.dump(this.config, {
+        indent: 2,
+        lineWidth: 120,
+        noRefs: true,
+      });
       fs.writeFileSync(this.configPath, yamlContent, 'utf8');
     } catch (error) {
       console.error('保存配置文件失败:', error);
@@ -269,7 +274,7 @@ export class ConfigManager {
     try {
       if (fs.existsSync(this.configPath)) {
         const fileContent = fs.readFileSync(this.configPath, 'utf8');
-        const loadedConfig = this.yamlToConfig(fileContent);
+        const loadedConfig = yaml.load(fileContent) as any;
         this.config = { ...this.config, ...loadedConfig };
       } else {
         // 如果配置文件不存在，创建默认配置
@@ -282,90 +287,7 @@ export class ConfigManager {
     }
   }
 
-  /**
-   * 将配置转换为YAML格式（简化版本）
-   */
-  private configToYaml(config: any, indent: number = 0): string {
-    const spaces = '  '.repeat(indent);
-    let yaml = '';
 
-    for (const [key, value] of Object.entries(config)) {
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        yaml += `${spaces}${key}:\n`;
-        yaml += this.configToYaml(value, indent + 1);
-      } else if (Array.isArray(value)) {
-        yaml += `${spaces}${key}:\n`;
-        for (const item of value) {
-          yaml += `${spaces}  - ${item}\n`;
-        }
-      } else {
-        yaml += `${spaces}${key}: ${value}\n`;
-      }
-    }
-
-    return yaml;
-  }
-
-  /**
-   * 将YAML转换为配置对象（简化版本）
-   */
-  private yamlToConfig(yaml: string): any {
-    const config: any = {};
-    const lines = yaml.split('\n');
-    let currentPath: string[] = [];
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) continue;
-
-      const colonIndex = trimmed.indexOf(':');
-      if (colonIndex === -1) continue;
-
-      const key = trimmed.substring(0, colonIndex);
-      const value = trimmed.substring(colonIndex + 1).trim();
-
-      // 计算缩进级别
-      const indent = line.length - line.trimStart().length;
-      const level = Math.floor(indent / 2);
-
-      // 更新当前路径
-      if (level < currentPath.length) {
-        currentPath = currentPath.slice(0, level);
-      }
-      currentPath[level] = key;
-
-      // 获取当前对象
-      let currentObj = config;
-      for (let i = 0; i < level; i++) {
-        const pathKey = currentPath[i];
-        if (pathKey && !currentObj[pathKey]) {
-          currentObj[pathKey] = {};
-        }
-        if (pathKey) {
-          currentObj = currentObj[pathKey];
-        }
-      }
-
-      if (value === '') {
-        // 新的对象
-        currentObj[key] = {};
-      } else if (trimmed.startsWith('-')) {
-        // 数组项
-        const arrayKey = currentPath[currentPath.length - 1];
-        if (arrayKey && !Array.isArray(currentObj[arrayKey])) {
-          currentObj[arrayKey] = [];
-        }
-        if (arrayKey) {
-          currentObj[arrayKey].push(trimmed.substring(1).trim());
-        }
-      } else {
-        // 简单值
-        currentObj[key] = value;
-      }
-    }
-
-    return config;
-  }
 
   /**
    * 展开路径中的环境变量和用户目录

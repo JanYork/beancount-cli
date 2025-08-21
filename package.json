@@ -30,10 +30,12 @@
   "author": "JanYork",
   "license": "MIT",
   "dependencies": {
+    "@types/js-yaml": "^4.0.9",
     "chalk": "4",
     "commander": "^11.1.0",
     "date-fns": "^2.30.0",
     "inquirer": "8",
+    "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "ora": "^7.0.1",
     "table": "^6.8.1"
