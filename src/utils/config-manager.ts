@@ -269,6 +269,7 @@ export class ConfigManager {
   private yamlToConfig(yaml: string): any {
     const config: any = {};
     const lines = yaml.split('\n');
+    let currentPath: string[] = [];
     
     for (const line of lines) {
       const trimmed = line.trim();
@@ -280,18 +281,43 @@ export class ConfigManager {
       const key = trimmed.substring(0, colonIndex);
       const value = trimmed.substring(colonIndex + 1).trim();
       
+      // 计算缩进级别
+      const indent = line.length - line.trimStart().length;
+      const level = Math.floor(indent / 2);
+      
+      // 更新当前路径
+      if (level < currentPath.length) {
+        currentPath = currentPath.slice(0, level);
+      }
+      currentPath[level] = key;
+      
+      // 获取当前对象
+      let currentObj = config;
+      for (let i = 0; i < level; i++) {
+        const pathKey = currentPath[i];
+        if (pathKey && !currentObj[pathKey]) {
+          currentObj[pathKey] = {};
+        }
+        if (pathKey) {
+          currentObj = currentObj[pathKey];
+        }
+      }
+      
       if (value === '') {
         // 新的对象
-        config[key] = {};
-      } else if (value.startsWith('-')) {
+        currentObj[key] = {};
+      } else if (trimmed.startsWith('-')) {
         // 数组项
-        if (!Array.isArray(config[key])) {
-          config[key] = [];
+        const arrayKey = currentPath[currentPath.length - 1];
+        if (arrayKey && !Array.isArray(currentObj[arrayKey])) {
+          currentObj[arrayKey] = [];
         }
-        config[key].push(value.substring(1).trim());
+        if (arrayKey) {
+          currentObj[arrayKey].push(trimmed.substring(1).trim());
+        }
       } else {
         // 简单值
-        config[key] = value;
+        currentObj[key] = value;
       }
     }
     

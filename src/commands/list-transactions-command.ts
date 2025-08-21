@@ -7,7 +7,6 @@
 import { parse, format } from 'date-fns';
 import { BaseCommand } from './base-command';
 import { BeancountEngine } from '../engine/beancount-engine';
-import chalk from 'chalk';
 
 export class ListTransactionsCommand extends BaseCommand {
   private engine: BeancountEngine;
@@ -65,24 +64,23 @@ export class ListTransactionsCommand extends BaseCommand {
         const transaction = transactions[i];
         if (transaction) {
           const dateStr = format(transaction.date, 'yyyy-MM-dd');
-          result += `${chalk.cyan(`${i + 1}. ${dateStr}`)} - ${chalk.yellow(transaction.narration)}\n`;
+          result += `${i + 1}. ${dateStr} - ${transaction.narration}\n`;
           
           if (transaction.payee) {
-            result += `   ${chalk.gray('收款人:')} ${chalk.blue(transaction.payee)}\n`;
+            result += `   收款人: ${transaction.payee}\n`;
           }
 
           for (const posting of transaction.postings) {
             if (posting.units) {
               const amount = posting.units.number;
               const currency = posting.units.currency;
-              const sign = amount >= 0 ? '+' : '';
-              const color = amount >= 0 ? chalk.green : chalk.red;
-              result += `   ${chalk.cyan(posting.account)}: ${color(`${sign}${amount} ${currency}`)}\n`;
+              const sign = amount >= 0 ? '' : '';
+              result += `   ${posting.account}: ${sign}${amount} ${currency}\n`;
             }
           }
 
           if (transaction.tags.length > 0) {
-            result += `   ${chalk.gray('标签:')} ${chalk.magenta(transaction.tags.join(', '))}\n`;
+            result += `   标签: ${transaction.tags.join(', ')}\n`;
           }
 
           result += '\n';

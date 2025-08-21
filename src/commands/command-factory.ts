@@ -57,7 +57,9 @@ export class CommandFactory {
       'list_accounts',
       'validate',
       'config',
-      'help'
+      'help',
+      'reload',
+      'quit'
     ];
   }
 

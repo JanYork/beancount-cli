@@ -41,6 +41,9 @@ ${chalk.green('/validate')}          验证文件
 ${chalk.green('/config')}            配置管理
    ${chalk.gray('用法:')} /config [action="操作"] [key="配置项"] [value="配置值"]
 
+${chalk.green('/reload')}            重新加载文件
+   ${chalk.gray('用法:')} /reload
+
 ${chalk.green('/help')}              显示此帮助信息
    ${chalk.gray('用法:')} /help
 

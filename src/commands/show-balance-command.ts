@@ -7,7 +7,6 @@
 import { parse } from 'date-fns';
 import { BaseCommand } from './base-command';
 import { BeancountEngine } from '../engine/beancount-engine';
-import chalk from 'chalk';
 
 export class ShowBalanceCommand extends BaseCommand {
   private engine: BeancountEngine;
@@ -54,9 +53,8 @@ export class ShowBalanceCommand extends BaseCommand {
         const amount = balance.amount.number;
         const currency = balance.amount.currency;
         const sign = amount >= 0 ? '+' : '';
-        const color = amount >= 0 ? chalk.green : chalk.red;
         
-        result += `📊 ${chalk.cyan(balance.account)}: ${color(`${sign}${amount} ${currency}`)}\n`;
+        result += `📊 ${balance.account}: ${sign}${amount} ${currency}\n`;
       }
 
       return this.createSuccessResult(result, balances);

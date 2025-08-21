@@ -59,7 +59,7 @@ describe('CommandFactory', () => {
       expect(commands).toContain('reload');
       expect(commands).toContain('quit');
       
-      expect(commands).toHaveLength(9);
+      expect(commands).toHaveLength(10);
     });
   });
 

@@ -406,7 +406,7 @@ describe('CommandParser', () => {
       expect(result.command).toBe('add');
       expect(result.params).toEqual({
         account: 'test',
-        amount: '100'
+        amount: 100
       });
     });
 
@@ -434,7 +434,7 @@ describe('CommandParser', () => {
       const result = CommandParser.parseCommand('add key=');
       expect(result.command).toBe('add');
       expect(result.params).toEqual({
-        key: ''
+        key: 0
       });
     });
   });

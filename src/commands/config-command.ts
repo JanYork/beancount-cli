@@ -175,16 +175,16 @@ export class ConfigCommand extends BaseCommand {
 
     for (const [key, value] of Object.entries(config)) {
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        result += `${spaces}${chalk.cyan(key)}:\n`;
+        result += `${spaces}${key}:\n`;
         result += this.formatConfig(value, indent + 1);
       } else if (Array.isArray(value)) {
-        result += `${spaces}${chalk.cyan(key)}:\n`;
+        result += `${spaces}${key}:\n`;
         for (const item of value) {
-          result += `${spaces}  ${chalk.green('•')} ${chalk.yellow(item)}\n`;
+          result += `${spaces}  • ${item}\n`;
         }
       } else {
         const displayValue = typeof value === 'string' ? `"${value}"` : value;
-        result += `${spaces}${chalk.cyan(key)}: ${chalk.yellow(displayValue)}\n`;
+        result += `${spaces}${key}: ${displayValue}\n`;
       }
     }
 

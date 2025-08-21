@@ -78,7 +78,7 @@ describe('CommandParser', () => {
       
       expect(result.command).toBe('add_transaction');
       expect(result.params).toEqual({
-        amount: 25.50
+        amount: 25.5
       });
     });
 
