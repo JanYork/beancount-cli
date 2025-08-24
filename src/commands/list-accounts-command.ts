@@ -6,9 +6,7 @@
 
 import { BaseCommand } from './base-command';
 import { BeancountEngine } from '../engine/beancount-engine';
-import { getLanguage, Language } from '../utils/i18n';
-import { AccountTranslator } from '../utils/account-translator';
-import chalk from 'chalk';
+import { CLIRenderer } from '../presentation/cli/cli-renderer';
 
 export class ListAccountsCommand extends BaseCommand {
   constructor(engine: BeancountEngine) {
@@ -24,66 +22,21 @@ export class ListAccountsCommand extends BaseCommand {
   execute(_params: Record<string, any>): import('../types').CommandResult {
     try {
       const accounts = this.engine?.getAccounts() || [];
-      const currentLanguage = getLanguage();
 
       if (accounts.length === 0) {
         return this.createSuccessResult('📋 没有找到账户信息');
       }
 
-      // 按类型分组账户
-      const accountGroups: Record<string, string[]> = {};
-      for (const account of accounts) {
-        const type = this.getAccountType(account.name, currentLanguage);
-        if (!accountGroups[type]) {
-          accountGroups[type] = [];
-        }
-        // 翻译账户名称
-        const translatedAccount = AccountTranslator.translateAccount(account.name, currentLanguage);
-        accountGroups[type].push(translatedAccount);
-      }
+      // 使用CLIRenderer显示账户列表
+      CLIRenderer.showAccountList(accounts);
 
-      // 格式化输出
-      let result = `📋 找到 ${accounts.length} 个账户:\n\n`;
-
-      for (const [type, accountList] of Object.entries(accountGroups)) {
-        result += `${chalk.cyan.bold(`${type}:`)}\n`;
-        for (const account of accountList) {
-          result += `  ${chalk.green('•')} ${chalk.yellow(account)}\n`;
-        }
-        result += '\n';
-      }
-
-      return this.createSuccessResult(result, accounts);
+      return this.createSuccessResult(`成功显示 ${accounts.length} 个账户`, accounts);
     } catch (error) {
       return this.createErrorResult(`列出账户失败: ${error}`);
     }
   }
 
-  /**
-   * 获取账户类型
-   *
-   * @param accountName 账户名称
-   * @param language 语言
-   * @returns 账户类型
-   */
-  private getAccountType(accountName: string, language: Language): string {
-    if (accountName.startsWith('Assets:')) {
-      return language === 'zh-CN' ? '💰 资产账户' : '💰 Assets';
-    }
-    if (accountName.startsWith('Liabilities:')) {
-      return language === 'zh-CN' ? '💳 负债账户' : '💳 Liabilities';
-    }
-    if (accountName.startsWith('Equity:')) {
-      return language === 'zh-CN' ? '🏦 权益账户' : '🏦 Equity';
-    }
-    if (accountName.startsWith('Income:')) {
-      return language === 'zh-CN' ? '📈 收入账户' : '📈 Income';
-    }
-    if (accountName.startsWith('Expenses:')) {
-      return language === 'zh-CN' ? '💸 支出账户' : '💸 Expenses';
-    }
-    return language === 'zh-CN' ? '❓ 其他账户' : '❓ Other';
-  }
+
 
   /**
    * 获取命令帮助信息

@@ -7,8 +7,9 @@
 import { parse } from 'date-fns';
 import { BaseCommand } from './base-command';
 import { BeancountEngine } from '../engine/beancount-engine';
-import { t, getLanguage } from '../utils/i18n';
-import { AccountTranslator } from '../utils/account-translator';
+import { t } from '../utils/i18n';
+import { CLIRenderer } from '../presentation/cli/cli-renderer';
+import { InteractiveCommandHandler } from '../presentation/cli/interactive-command-handler';
 
 export class ShowBalanceCommand extends BaseCommand {
   constructor(engine: BeancountEngine) {
@@ -21,8 +22,13 @@ export class ShowBalanceCommand extends BaseCommand {
    * @param params 命令参数
    * @returns 执行结果
    */
-  execute(params: Record<string, any>): import('../types').CommandResult {
+  async execute(params: Record<string, any>): Promise<import('../types').CommandResult> {
     try {
+      // 检查是否需要交互式输入
+      if (params['interactive'] === true || Object.keys(params).length === 0) {
+        return this.executeInteractive();
+      }
+
       const account = params['account'] as string;
       const dateStr = params['date'] as string;
 
@@ -45,47 +51,38 @@ export class ShowBalanceCommand extends BaseCommand {
         return this.createSuccessResult(t('balance.no.data'));
       }
 
-      // 格式化输出 - 用户友好的界面
-      let result = `${t('balance.title')}\n\n`;
+      // 使用CLIRenderer显示余额信息
+      CLIRenderer.showBalance(balances);
 
-      // 按货币分组
-      const currencyGroups: Record<string, { accounts: string[]; total: number }> = {};
-      const currentLanguage = getLanguage();
-
-      for (const balance of balances) {
-        const amount = balance.amount.number;
-        const currency = balance.amount.currency;
-
-        if (!currencyGroups[currency]) {
-          currencyGroups[currency] = { accounts: [], total: 0 };
-        }
-
-        const sign = amount >= 0 ? '+' : '';
-        const formattedAmount = `${sign}${amount.toLocaleString()}`;
-
-        // 翻译账户名称
-        const translatedAccount = AccountTranslator.translateAccount(balance.account, currentLanguage);
-        currencyGroups[currency].accounts.push(`${translatedAccount}: ${formattedAmount}`);
-        currencyGroups[currency].total += amount;
-      }
-
-      // 按货币显示
-      for (const [currency, group] of Object.entries(currencyGroups)) {
-        result += `${t('balance.currency', { currency })}\n`;
-
-        for (const accountInfo of group.accounts) {
-          result += `   ${accountInfo}\n`;
-        }
-
-        const totalSign = group.total >= 0 ? '+' : '';
-        const totalFormatted = `${totalSign}${group.total.toLocaleString()}`;
-        result += `   ─────────────────\n`;
-        result += `   ${t('balance.total')}: ${totalFormatted} ${currency}\n\n`;
-      }
-
-      return this.createSuccessResult(result, balances);
+      return this.createSuccessResult(`成功显示 ${balances.length} 个账户余额`, balances);
     } catch (error) {
       return this.createErrorResult(`${t('balance.display.error')} ${error}`);
+    }
+  }
+
+  /**
+   * 执行交互式显示余额
+   */
+  private async executeInteractive(): Promise<import('../types').CommandResult> {
+    try {
+      // 使用交互式处理器收集参数
+      const interactiveParams = await InteractiveCommandHandler.handleShowBalance();
+      
+      // 构建参数
+      const params: Record<string, any> = {};
+      
+      if (interactiveParams.accounts && interactiveParams.accounts.length > 0) {
+        params['account'] = interactiveParams.accounts.join(',');
+      }
+      
+      if (interactiveParams.date && interactiveParams.date !== 'current') {
+        params['date'] = interactiveParams.date;
+      }
+      
+      // 递归调用 execute 方法，传入收集到的参数
+      return await this.execute(params);
+    } catch (error) {
+      return this.createErrorResult(`交互式显示余额失败: ${error}`);
     }
   }
 
@@ -97,17 +94,19 @@ export class ShowBalanceCommand extends BaseCommand {
   getHelp(): string {
     return `
 💰 显示账户余额
-用法: /show_balance [account="Assets:Cash"] [date=2024-01-01]
+用法: show_balance [参数] 或 show_balance interactive=true
 
 参数:
 - account: 账户名称 (可选)
 - date: 查询日期 (YYYY-MM-DD, 可选)
+- interactive: 是否使用交互式输入 (true/false)
 
 示例:
-/show_balance
-/show_balance account="Assets:Cash"
-/show_balance date=2024-01-01
-/show_balance account="Assets:Cash" date=2024-01-01
+show_balance
+show_balance account="Assets:Cash"
+show_balance date=2024-01-01
+show_balance account="Assets:Cash" date=2024-01-01
+show_balance interactive=true
     `;
   }
 }

@@ -10,6 +10,7 @@ import { CommandResult } from '../types';
 import { ReportGenerator } from '../utils/report-generator';
 import { UIEnhancer } from '../utils/ui-enhancer';
 import { BeancountEngine } from '../engine/beancount-engine';
+import { InteractiveCommandHandler } from '../presentation/cli/interactive-command-handler';
 import { format, subMonths } from 'date-fns';
 
 export class ReportCommand extends BaseCommand {
@@ -19,12 +20,17 @@ export class ReportCommand extends BaseCommand {
 
     async execute(params: Record<string, any>): Promise<CommandResult> {
         try {
+            // 检查是否需要交互式输入
+            if (params['interactive'] === true || Object.keys(params).length === 0) {
+                return await this.executeInteractive();
+            }
+
             const reportType = params['type'] || params['args']?.[0];
 
             if (!reportType) {
                 return {
                     success: false,
-                    message: '请指定报表类型，使用 /report help 查看支持的报表类型',
+                    message: '请指定报表类型，使用 report help 查看支持的报表类型',
                 };
             }
 
@@ -78,6 +84,40 @@ export class ReportCommand extends BaseCommand {
             return {
                 success: false,
                 message: `报表生成失败: ${error}`,
+            };
+        }
+    }
+
+    /**
+     * 执行交互式报表生成
+     */
+    private async executeInteractive(): Promise<CommandResult> {
+        try {
+            // 使用交互式处理器收集参数
+            const interactiveParams = await InteractiveCommandHandler.handleReport();
+            
+            // 构建参数
+            const params: Record<string, any> = {};
+            
+            if (interactiveParams.reportType) {
+                params['type'] = interactiveParams.reportType;
+            }
+            
+            if (interactiveParams.dateRange) {
+                params['startDate'] = interactiveParams.dateRange.start;
+                params['endDate'] = interactiveParams.dateRange.end;
+            }
+            
+            if (interactiveParams.accounts && interactiveParams.accounts.length > 0) {
+                params['accounts'] = interactiveParams.accounts.join(',');
+            }
+            
+            // 递归调用 execute 方法，传入收集到的参数
+            return await this.execute(params);
+        } catch (error) {
+            return {
+                success: false,
+                message: `交互式报表生成失败: ${error}`,
             };
         }
     }

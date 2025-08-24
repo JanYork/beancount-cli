@@ -31,13 +31,16 @@ export class I18nManager {
       'cli.interrupt.detected': '⚠️  检测到中断信号，输入 /quit 退出程序',
 
       // 文件状态
-      'status.title': '📊 文件状态:',
-      'status.accounts': '   账户数量:',
-      'status.transactions': '   交易记录:',
-      'status.balances': '   余额记录:',
-      'status.errors': '   错误数量:',
-      'status.filepath': '   文件路径:',
+      'status.title': '📊 文件状态',
+      'status.accounts': '账户数量',
+      'status.transactions': '交易记录',
+      'status.balances': '余额记录',
+      'status.errors': '错误数量',
+      'status.filepath': '文件路径',
       'status.unavailable': '⚠️  无法获取状态信息',
+      'status.metrics': '指标',
+      'status.count': '数量',
+      'status.file': '文件',
 
       // 命令补全
       'completion.suggestions': '💡 建议:',
@@ -46,12 +49,14 @@ export class I18nManager {
       'completion.multiple.found': '💡 找到多个匹配的命令:',
 
       // 余额显示
-      'balance.title': '💰 账户余额信息:',
-      'balance.currency': '💵 {currency} 货币:',
-      'balance.total': '💰 总计:',
-      'balance.no.data': '💰 没有找到余额信息',
-      'balance.display.error': '显示余额失败:',
+      'balance.title': '💰 账户余额',
+      'balance.currency': '货币',
+      'balance.total': '总计',
+      'balance.no.data': '💰 暂无余额信息',
+      'balance.display.error': '显示余额失败',
       'balance.date.format.error': '日期格式错误',
+      'balance.account': '账户',
+      'balance.amount': '余额',
 
       // 命令帮助
       'help.commands': {
@@ -82,10 +87,112 @@ export class I18nManager {
       },
 
       // 启动相关
-      'startup.using.default.path': '📁 使用配置文件中的默认路径:',
-      'startup.file.not.exists': '⚠️  文件不存在:',
+      'startup.using.default.path': '📁 使用配置文件中的默认路径',
+      'startup.file.not.exists': '⚠️  文件不存在',
       'startup.goodbye': '👋 再见！',
-      'startup.failed': '❌ 启动失败:',
+      'startup.failed': '❌ 启动失败',
+      
+      // 表格相关
+      'table.date': '日期',
+      'table.description': '描述',
+      'table.amount': '金额',
+      'table.account': '账户',
+      'table.command': '命令',
+      'table.usage': '用法',
+      'table.available.commands': '可用命令',
+      'table.transaction.records': '交易记录',
+      'table.total.records': '共 {count} 条记录',
+      'table.no.transactions': '📝 暂无交易记录',
+      'table.no.transactions.hint': '您可以添加一些交易记录来开始记账',
+      'table.no.accounts': '🏦 暂无账户',
+      'table.no.accounts.hint': '您可以先创建一些账户来开始记账',
+      'table.no.balance': '💰 暂无余额信息',
+      'table.no.balance.hint': '您可以添加一些交易记录来查看余额',
+      
+      // 账户类型
+      'account.type.assets': '💰 资产账户',
+      'account.type.liabilities': '💳 负债账户',
+      'account.type.income': '💵 收入账户',
+      'account.type.expenses': '💸 支出账户',
+      'account.type.equity': '📊 权益账户',
+      'account.type.other': '📁 其他账户',
+      'account.created': '创建于',
+      
+      // 账户名称翻译
+      'account.assets.bank': '银行账户',
+      'account.assets.cash': '现金',
+      'account.assets.investment': '投资账户',
+      'account.assets.property': '房产',
+      'account.assets.vehicle': '车辆',
+      'account.liabilities.credit': '信用卡',
+      'account.liabilities.loan': '贷款',
+      'account.liabilities.mortgage': '房贷',
+      'account.income.salary': '工资收入',
+      'account.income.bonus': '奖金收入',
+      'account.income.investment': '投资收益',
+      'account.expenses.food': '餐饮支出',
+      'account.expenses.transport': '交通支出',
+      'account.expenses.utilities': '水电费',
+      'account.expenses.entertainment': '娱乐支出',
+      'account.expenses.shopping': '购物支出',
+      'account.expenses.medical': '医疗支出',
+      'account.expenses.education': '教育支出',
+      'account.expenses.housing': '住房支出',
+      
+      // 消息类型
+      'message.success': '✅ 操作成功',
+      'message.error': '❌ 操作失败',
+      'message.warning': '⚠️ 温馨提示',
+      'message.info': 'ℹ️ 小贴士',
+      'message.loading': '⏳ 正在处理',
+      'message.completion': '🎉 完成',
+      
+      // 交互提示
+      'prompt.enter.command': '💡 输入命令',
+      'prompt.help.hint': '输入 help 查看帮助',
+      'prompt.confirm': '❓ 请确认操作',
+      'prompt.input': '📝 请输入',
+      'prompt.select': '📋 请选择',
+      'prompt.progress': '🔄 正在处理',
+      
+      // 命令类别
+      'category.basic': '📝 基础操作',
+      'category.query': '🔍 查询统计',
+      'category.system': '⚙️ 系统管理',
+      'category.file': '📁 文件管理',
+      
+      // 操作结果
+      'result.success': '✅ 操作成功',
+      'result.failed': '❌ 操作失败',
+      'result.completed': '🎉 完成',
+      'result.processing': '⏳ 处理中',
+      'result.loading': '🔄 加载中',
+      'result.saving': '💾 保存中',
+      'result.validating': '🔍 验证中',
+      'result.exporting': '📤 导出中',
+      'result.importing': '📥 导入中',
+      
+      // 交互式命令
+      'interactive.select.date': '📅 选择日期',
+      'interactive.select.account': '🏦 选择账户',
+      'interactive.select.category': '📂 选择分类',
+      'interactive.enter.amount': '💰 输入金额',
+      'interactive.enter.description': '📝 输入描述',
+      'interactive.search.placeholder': '🔍 搜索关键词...',
+      'interactive.no.results': '❌ 未找到匹配项',
+      'interactive.select.option': '请选择',
+      'interactive.confirm': '确认',
+      'interactive.cancel': '取消',
+      'interactive.back': '返回',
+      'interactive.next': '下一步',
+      'interactive.finish': '完成',
+      
+      // 命令提示
+      'command.prompt': '💡 输入命令',
+      'command.help.hint': '输入 help 查看帮助',
+      'command.suggestions': '💡 建议命令',
+      'command.invalid': '❌ 无效命令',
+      'command.not.found': '❌ 命令未找到',
     },
     'en-US': {
       // CLI General

@@ -1,328 +1,77 @@
 /**
  * Beancount CLI 主命令行界面
+ * 重构后的版本，使用分层架构和依赖注入
+ * 支持一次性命令和交互模式
  *
- * 作者: JanYork
+ * @author JanYork
  */
 
 import { Command } from 'commander';
-import inquirer from 'inquirer';
+import { CLIController } from './presentation/cli/cli-controller';
+import { CommandExecutor } from './presentation/cli/command-executor';
 import { BeancountEngine } from './engine/beancount-engine';
-import { CommandFactory } from './commands/command-factory';
-import { CommandResult } from './types';
-import { CommandCompleter } from './utils/command-completer';
-import { t, tn } from './utils/i18n';
-import { UIEnhancer } from './utils/ui-enhancer';
+import { t } from './utils/i18n';
 
-// 完整的CommandParser实现
-export class CommandParser {
-  static parseCommand(input: string) {
-    const [command, ...paramParts] = input.trim().split(' ');
-    const parsedCommand = command?.startsWith('/') ? command.slice(1) : command || '';
-
-    // 解析参数
-    const params: Record<string, any> = {};
-    for (const part of paramParts) {
-      if (part.includes('=')) {
-        const [key, value] = part.split('=', 2);
-        if (key && value !== undefined) {
-          // 处理嵌套键，如 currency.default
-          this.setNestedValue(params, key, value);
-        }
-      } else if (part) {
-        // 如果没有等号，作为位置参数
-        if (!params['args']) {
-          params['args'] = [];
-        }
-        (params['args'] as any[]).push(part);
-      }
-    }
-
-    return {
-      command: parsedCommand,
-      params,
-    };
-  }
-
-  /**
-   * 设置嵌套值
-   */
-  private static setNestedValue(obj: Record<string, any>, key: string, value: string): void {
-    const keys = key.split('.');
-    let current = obj;
-
-    for (let i = 0; i < keys.length - 1; i++) {
-      const k = keys[i];
-      if (k && (!(k in current) || typeof current[k] !== 'object')) {
-        current[k] = {};
-      }
-      if (k) {
-        current = current[k];
-      }
-    }
-
-    const lastKey = keys[keys.length - 1];
-    if (lastKey) {
-      // 尝试解析值类型
-      if (value === 'true' || value === 'false') {
-        current[lastKey] = value === 'true';
-      } else if (!isNaN(Number(value))) {
-        current[lastKey] = Number(value);
-      } else {
-        current[lastKey] = value;
-      }
-    }
-  }
-
-  static validateCommand(command: string): boolean {
-    return CommandCompleter.getAllCommands().includes(command);
-  }
-
-  static getCommandHelp(commandName: string): string | null {
-    const commandDetails = CommandCompleter.getCommandDetails(commandName);
-    if (commandDetails) {
-      const description = tn('help.commands', commandName);
-      const usage = tn('usage.commands', commandName);
-      return `${usage}\n${description}`;
-    }
-    return null;
-  }
-
-  /**
-   * 获取所有可用命令
-   */
-  static getAllCommands(): string[] {
-    return CommandCompleter.getAllCommands();
-  }
-
-  /**
-   * 获取命令建议
-   */
-  static getCommandSuggestions(partialCommand: string): string[] {
-    const suggestions = CommandCompleter.getSuggestions(`/${partialCommand}`);
-    return suggestions.map(s => s.command);
-  }
-}
-
+/**
+ * BeancountCLI类
+ * 主CLI类，负责初始化和启动CLI应用
+ */
 export class BeancountCLI {
-  private engine: BeancountEngine;
-  private running: boolean = true;
+  private readonly controller: CLIController;
+  private readonly executor: CommandExecutor;
 
   constructor(filePath: string) {
-    this.engine = new BeancountEngine(filePath);
+    const engine = new BeancountEngine(filePath);
+    
+    // 初始化命令工厂
+    const { CommandFactory } = require('./commands/command-factory');
+    CommandFactory.setEngine(engine);
+    
+    this.executor = new CommandExecutor(engine);
+    this.controller = new CLIController(this.executor);
   }
 
   /**
-   * 运行CLI主循环
+   * 运行交互式CLI应用
    */
-  async run(): Promise<void> {
-    this.printBanner();
-    this.printStatus();
-
-    while (this.running) {
-      try {
-        await this.showPrompt();
-      } catch (error) {
-        if (error instanceof Error && error.message === 'SIGINT') {
-          console.log(`\n${t('cli.interrupt.detected')}`);
-          continue;
-        }
-        this.handleError(`${t('cli.unexpected.error')} ${error}`);
-      }
-    }
+  async runInteractive(): Promise<void> {
+    await this.controller.run();
   }
 
   /**
-   * 打印欢迎横幅
+   * 执行一次性命令
    */
-  private printBanner(): void {
-    UIEnhancer.showBanner('Beancount CLI', t('cli.banner.subtitle'));
+  async executeCommand(commandName: string, params: Record<string, any> = {}): Promise<any> {
+    const result = await this.executor.execute(commandName, params);
+    return result;
   }
 
   /**
-   * 打印状态信息
+   * 获取文件统计信息
    */
-  private printStatus(): void {
-    try {
-      const stats = this.engine.getFileStats();
-
-      console.log(`\n📊 ${t('status.title')}`);
-      UIEnhancer.showStatCard(t('status.accounts'), stats['totalAccounts'], '个', 0);
-      UIEnhancer.showStatCard(t('status.transactions'), stats['totalTransactions'], '条', 0);
-      UIEnhancer.showStatCard(t('status.balances'), stats['totalBalances'], '个', 0);
-      UIEnhancer.showStatCard(t('status.errors'), stats['totalErrors'], '个', 0);
-      console.log(`📁 ${t('status.filepath')}: ${stats['filePath']}`);
-      console.log();
-    } catch (error) {
-      UIEnhancer.showWarning(t('status.unavailable'));
-      console.log();
-    }
-  }
-
-  /**
-   * 显示命令提示
-   */
-  private async showPrompt(): Promise<void> {
-    const { userInput } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'userInput',
-        message: t('cli.prompt.message'),
-        default: '',
-        prefix: '',
-        suffix: '',
-        transformer: (input: string) => {
-          // 实时显示命令建议
-          if (input.startsWith('/')) {
-            const suggestions = CommandCompleter.getSuggestions(input);
-            if (suggestions.length > 0 && suggestions.length <= 5) {
-              // 清除之前的建议显示
-              process.stdout.write('\x1b[2K\r');
-              // 显示建议
-              const suggestionText = suggestions.map(s => `/${s.command}`).join(' ');
-              process.stdout.write(`💡 ${t('completion.suggestions')} ${suggestionText}`);
-            }
-          }
-          return input;
-        },
-      },
-    ]);
-
-    if (!userInput.trim()) {
-      return;
-    }
-
-    // 如果用户输入的是部分命令，尝试补全
-    if (userInput.startsWith('/') && !userInput.includes(' ')) {
-      const suggestions = CommandCompleter.getSuggestions(userInput);
-      if (suggestions.length === 1) {
-        // 自动补全
-        const suggestion = suggestions[0];
-        if (suggestion) {
-          UIEnhancer.showInfo(`${t('completion.auto.complete')} /${suggestion.command}`);
-          await this.processCommand(`/${suggestion.command}`);
-        }
-        return;
-      } else if (suggestions.length > 1) {
-        // 显示选择界面
-        const { selectedCommand } = await inquirer.prompt([
-          {
-            type: 'list',
-            name: 'selectedCommand',
-            message: t('completion.select.command'),
-            choices: suggestions.map(s => ({
-              name: `/${s.command} - ${tn('help.commands', s.command)}`,
-              value: `/${s.command}`,
-            })),
-          },
-        ]);
-        await this.processCommand(selectedCommand);
-        return;
-      }
-    }
-
-    await this.processCommand(userInput);
-  }
-
-  /**
-   * 处理命令
-   *
-   * @param input 用户输入
-   */
-  private async processCommand(input: string): Promise<void> {
-    try {
-      // 解析命令
-      const parsedCommand = CommandParser.parseCommand(input);
-
-      // 验证命令
-      if (!CommandParser.validateCommand(parsedCommand.command)) {
-        this.handleError(`${t('cli.invalid.command')} ${parsedCommand.command}`);
-        console.log(t('cli.help.suggestion'));
-        return;
-      }
-
-      // 处理特殊命令
-      if (parsedCommand.command === 'quit') {
-        this.running = false;
-        UIEnhancer.showSuccess(t('cli.quit'));
-        return;
-      }
-
-      if (parsedCommand.command === 'help') {
-        if (parsedCommand.params['args'] && parsedCommand.params['args'].length > 0) {
-          const helpText = CommandParser.getCommandHelp(parsedCommand.params['args'][0]);
-          if (helpText) {
-            console.log(helpText);
-          } else {
-            this.handleError(`未知命令: ${parsedCommand.params['args'][0]}`);
-          }
-        } else {
-          // 显示通用帮助
-          const helpCommand = CommandFactory.createCommand('help', this.engine);
-          if (helpCommand) {
-            const result = await helpCommand.execute(parsedCommand.params);
-            this.displayResult(result);
-          }
-        }
-        return;
-      }
-
-      if (parsedCommand.command === 'reload') {
-        this.engine.reload();
-        UIEnhancer.showWarning(t('cli.reload.success'));
-        this.printStatus();
-        return;
-      }
-
-      // 创建并执行命令
-      const command = CommandFactory.createCommand(parsedCommand.command, this.engine);
-      if (command) {
-        const result = await command.execute(parsedCommand.params);
-        this.displayResult(result);
-      } else {
-        this.handleError(`未知命令: ${parsedCommand.command}`);
-      }
-    } catch (error) {
-      this.handleError(`${t('cli.command.parse.error')} ${error}`);
-    }
-  }
-
-  /**
-   * 显示命令执行结果
-   *
-   * @param result 执行结果
-   */
-  private displayResult(result: CommandResult): void {
-    if (result.success) {
-      UIEnhancer.showSuccess(result.message);
-    } else {
-      UIEnhancer.showError(result.message);
-    }
-    console.log();
-  }
-
-  /**
-   * 处理错误
-   *
-   * @param error 错误信息
-   */
-  private handleError(error: string): void {
-    UIEnhancer.showError(`${t('cli.error.general')} ${error}`);
-    console.log();
+  getFileStats(): any {
+    return this.executor.getFileStats();
   }
 }
 
 /**
  * 主函数
+ * 程序入口点
  */
 async function main(): Promise<void> {
   const program = new Command();
 
   program
     .name('beancount-cli')
-    .description('Beancount CLI - 智能记账命令行工具')
+    .description('智能记账助手 - 让记账变得简单')
     .version('1.0.0')
-    .argument('[file]', 'Beancount文件路径（可选，将使用配置文件中的默认路径）')
-    .action(async (file?: string) => {
+    .argument('[file]', '记账文件位置（可选，会自动使用默认位置）')
+    .option('-c, --command <command>', '执行单个功能')
+    .option('-p, --params <params>', '功能参数（JSON格式）')
+    .option('-i, --interactive', '启动交互模式（默认）')
+    .option('--stats', '查看记账文件状态')
+    .option('--help-command <cmd>', '查看特定功能说明')
+    .action(async (file?: string, options?: any) => {
       try {
         // 初始化配置和文件
         const { ConfigManager } = await import('./utils/config-manager');
@@ -351,7 +100,57 @@ async function main(): Promise<void> {
         }
 
         const cli = new BeancountCLI(filePath);
-        await cli.run();
+
+        // 根据选项决定运行模式
+        if (options.helpCommand) {
+          // 显示功能说明
+          const { CLIRenderer } = await import('./presentation/cli/cli-renderer');
+          const helpInfo = getCommandHelpInfo(options.helpCommand);
+          CLIRenderer.showCommandHelp(
+            options.helpCommand,
+            helpInfo.description,
+            helpInfo.usage,
+            helpInfo.examples
+          );
+          process.exit(0);
+        }
+
+        if (options.stats) {
+          // 显示记账文件状态
+          const { CLIRenderer } = await import('./presentation/cli/cli-renderer');
+          const stats = cli.getFileStats();
+          CLIRenderer.showFileStatus(stats);
+          process.exit(0);
+        }
+
+        if (options.command) {
+          // 执行单个功能
+          let params = {};
+          if (options.params) {
+            try {
+              params = JSON.parse(options.params);
+            } catch (error) {
+              console.error('❌ 参数格式有问题，请检查输入格式');
+              process.exit(1);
+            }
+          }
+
+          const result = await cli.executeCommand(options.command, params);
+          
+          if (result.success) {
+            console.log('✅ 功能执行成功');
+            if (result.data) {
+              console.log(result.data);
+            }
+          } else {
+            console.error(`❌ 功能执行遇到问题: ${result.message}`);
+            process.exit(1);
+          }
+          process.exit(0);
+        }
+
+        // 默认启动交互模式
+        await cli.runInteractive();
       } catch (error) {
         console.error(t('startup.failed'), error);
         process.exit(1);
@@ -359,6 +158,70 @@ async function main(): Promise<void> {
     });
 
   program.parse();
+}
+
+/**
+ * 获取命令帮助信息
+ */
+function getCommandHelpInfo(commandName: string): { description: string; usage: string; examples: string[] } {
+  const helpMap: Record<string, { description: string; usage: string; examples: string[] }> = {
+    'help': {
+      description: '显示帮助信息',
+      usage: 'help [command]',
+      examples: ['help', 'help add_transaction', 'help list_transactions']
+    },
+    'add_transaction': {
+      description: '添加交易记录',
+      usage: 'add_transaction',
+      examples: ['add_transaction', 'add_transaction date=2024-01-01 amount=100 currency=CNY']
+    },
+    'list_transactions': {
+      description: '列出交易记录',
+      usage: 'list_transactions [options]',
+      examples: ['list_transactions', 'list_transactions limit=10', 'list_transactions account=现金']
+    },
+    'show_balance': {
+      description: '显示账户余额',
+      usage: 'show_balance [account]',
+      examples: ['show_balance', 'show_balance 现金', 'show_balance 银行卡']
+    },
+    'list_accounts': {
+      description: '列出所有账户',
+      usage: 'list_accounts',
+      examples: ['list_accounts']
+    },
+    'validate': {
+      description: '验证文件格式',
+      usage: 'validate',
+      examples: ['validate']
+    },
+    'export': {
+      description: '导出数据',
+      usage: 'export [format]',
+      examples: ['export', 'export csv', 'export json']
+    },
+    'search': {
+      description: '搜索交易记录',
+      usage: 'search <query>',
+      examples: ['search 午餐', 'search amount>100', 'search date=2024-01-01']
+    },
+    'show_networth': {
+      description: '显示净资产',
+      usage: 'show_networth [date]',
+      examples: ['show_networth', 'show_networth date=2024-01-01']
+    },
+    'config': {
+      description: '配置管理',
+      usage: 'config [action] [key] [value]',
+      examples: ['config', 'config theme dark', 'config language en-US']
+    }
+  };
+
+  return helpMap[commandName] || {
+    description: '未知命令',
+    usage: 'unknown',
+    examples: []
+  };
 }
 
 if (require.main === module) {

@@ -6,179 +6,139 @@
  */
 
 import { BaseCommand } from './base-command';
-import { CommandResult, ExportOptions } from '../types';
-import { ExportUtil } from '../utils/export-util';
-import { UIEnhancer } from '../utils/ui-enhancer';
 import { BeancountEngine } from '../engine/beancount-engine';
-import { SearchPaginationUtil } from '../utils/search-pagination';
+import { InteractiveCommandHandler } from '../presentation/cli/interactive-command-handler';
+import { ExportUtil } from '../utils/export-util';
 
 export class ExportCommand extends BaseCommand {
-    constructor(engine: BeancountEngine) {
-        super(engine);
+  constructor(engine: BeancountEngine) {
+    super(engine);
+  }
+
+  /**
+   * 执行导出命令
+   *
+   * @param params 命令参数
+   * @returns 执行结果
+   */
+  async execute(params: Record<string, any>): Promise<import('../types').CommandResult> {
+    try {
+      // 检查是否需要交互式输入
+      if (params['interactive'] === true || Object.keys(params).length === 0) {
+        return await this.executeInteractive();
+      }
+
+      const format = params['format'] as string;
+      const outputPath = params['outputPath'] as string;
+      const startDate = params['startDate'] as string;
+      const endDate = params['endDate'] as string;
+      const accounts = params['accounts'] as string;
+
+      // 验证必需参数
+      if (!format) {
+        return this.createErrorResult('缺少必需参数: format。请指定导出格式，或使用 interactive=true 进行交互式输入');
+      }
+
+      // 获取要导出的数据
+      const transactions = this.engine?.getTransactions() || [];
+      // const _accountsList = this.engine?.getAccounts() || [];
+
+      // 根据日期范围过滤交易
+      let filteredTransactions = transactions;
+      if (startDate || endDate) {
+        filteredTransactions = transactions.filter(tx => {
+          const txDate = new Date(tx.date);
+          if (startDate && txDate < new Date(startDate)) return false;
+          if (endDate && txDate > new Date(endDate)) return false;
+          return true;
+        });
+      }
+
+      // 根据账户过滤交易
+      if (accounts) {
+        const accountList = accounts.split(',');
+        filteredTransactions = filteredTransactions.filter(tx => {
+          const txAccounts = tx.postings?.map((p: any) => p.account) || [];
+          return accountList.some(account => txAccounts.includes(account));
+        });
+      }
+
+      // 构建导出选项
+      const exportOptions = {
+        format: format as any,
+        outputPath: outputPath || undefined
+      };
+
+      // 执行导出
+      const outputFilePath = await ExportUtil.exportTransactions(filteredTransactions, exportOptions);
+
+      return this.createSuccessResult(
+        `✅ 数据导出成功: ${outputFilePath}`,
+        { filePath: outputFilePath, transactionCount: filteredTransactions.length }
+      );
+    } catch (error) {
+      return this.createErrorResult(`导出失败: ${error}`);
     }
+  }
 
-    async execute(params: Record<string, any>): Promise<CommandResult> {
-        try {
-            const format = params['format'] || params['args']?.[0];
-
-            if (!format) {
-                return {
-                    success: false,
-                    message: '请指定导出格式，使用 /export help 查看支持的格式',
-                };
-            }
-
-            if (format === 'help') {
-                return {
-                    success: true,
-                    message: this.getHelp(),
-                };
-            }
-
-            // 确保导出目录存在
-            ExportUtil.ensureExportDirectory();
-
-            // 获取要导出的数据
-            const transactions = await this.getTransactionsToExport(params);
-
-            if (transactions.length === 0) {
-                return {
-                    success: false,
-                    message: '没有找到要导出的交易记录',
-                };
-            }
-
-            // 构建导出选项
-            const exportOptions: ExportOptions = {
-                format: format as any,
-                outputPath: params['outputPath'],
-                dateRange: params['startDate'] && params['endDate'] ? {
-                    start: new Date(params['startDate']),
-                    end: new Date(params['endDate']),
-                } : undefined,
-                accounts: params['accounts'] ? (Array.isArray(params['accounts']) ? params['accounts'] : [params['accounts']]) : undefined,
-                tags: params['tags'] ? (Array.isArray(params['tags']) ? params['tags'] : [params['tags']]) : undefined,
-            } as ExportOptions;
-
-            // 显示导出进度
-            const spinner = UIEnhancer.showSpinner(`正在导出 ${transactions.length} 条交易记录...`);
-
-            try {
-                // 执行导出
-                const outputPath = await ExportUtil.exportTransactions(transactions, exportOptions);
-
-                UIEnhancer.stopSpinner(spinner);
-                UIEnhancer.showSuccess(`导出成功！文件保存至: ${outputPath}`);
-
-                // 显示导出摘要
-                this.displayExportSummary(transactions, exportOptions, outputPath);
-
-                return {
-                    success: true,
-                    message: `成功导出 ${transactions.length} 条交易记录到 ${outputPath}`,
-                    data: {
-                        outputPath,
-                        transactionCount: transactions.length,
-                        format,
-                        options: exportOptions,
-                    },
-                };
-            } catch (error) {
-                UIEnhancer.stopSpinner(spinner);
-                throw error;
-            }
-        } catch (error) {
-            return {
-                success: false,
-                message: `导出失败: ${error}`,
-            };
-        }
+  /**
+   * 执行交互式导出
+   */
+  private async executeInteractive(): Promise<import('../types').CommandResult> {
+    try {
+      // 使用交互式处理器收集参数
+      const interactiveParams = await InteractiveCommandHandler.handleExport();
+      
+      // 构建参数
+      const params: Record<string, any> = {};
+      
+      if (interactiveParams.format) {
+        params['format'] = interactiveParams.format;
+      }
+      
+      if (interactiveParams.outputPath) {
+        params['outputPath'] = interactiveParams.outputPath;
+      }
+      
+      if (interactiveParams.dateRange) {
+        params['startDate'] = interactiveParams.dateRange.start;
+        params['endDate'] = interactiveParams.dateRange.end;
+      }
+      
+      if (interactiveParams.accounts && interactiveParams.accounts.length > 0) {
+        params['accounts'] = interactiveParams.accounts.join(',');
+      }
+      
+      // 递归调用 execute 方法，传入收集到的参数
+      return await this.execute(params);
+    } catch (error) {
+      return this.createErrorResult(`交互式导出失败: ${error}`);
     }
+  }
 
-    private async getTransactionsToExport(params: Record<string, any>) {
-        const allTransactions = this.engine?.getTransactions() || [];
+  /**
+   * 获取命令帮助信息
+   *
+   * @returns 帮助信息
+   */
+  getHelp(): string {
+    return `
+📤 导出数据
+用法: export [参数] 或 export interactive=true
 
-        // 如果没有指定过滤条件，导出所有交易
-        if (!params['startDate'] && !params['endDate'] && !params['accounts'] && !params['tags'] && !params['query']) {
-            return allTransactions;
-        }
-
-        // 构建搜索选项
-        const searchOptions = SearchPaginationUtil.parseSearchOptions(params);
-
-        // 执行搜索过滤
-        return SearchPaginationUtil.searchTransactions(allTransactions, searchOptions);
-    }
-
-    private displayExportSummary(transactions: any[], options: ExportOptions, outputPath: string) {
-        console.log('\n📊 导出摘要:');
-        console.log(`   导出格式: ${options.format.toUpperCase()}`);
-        console.log(`   交易数量: ${transactions.length} 条`);
-        console.log(`   输出路径: ${outputPath}`);
-
-        if (options.dateRange) {
-            console.log(`   日期范围: ${options.dateRange.start.toLocaleDateString()} 至 ${options.dateRange.end.toLocaleDateString()}`);
-        }
-
-        if (options.accounts?.length) {
-            console.log(`   账户过滤: ${options.accounts.join(', ')}`);
-        }
-
-        if (options.tags?.length) {
-            console.log(`   标签过滤: ${options.tags.join(', ')}`);
-        }
-
-        // 计算总金额
-        let totalAmount = 0;
-        const currencies = new Set<string>();
-
-        for (const tx of transactions) {
-            for (const posting of tx.postings) {
-                if (posting.units) {
-                    totalAmount += Math.abs(posting.units.number);
-                    currencies.add(posting.units.currency);
-                }
-            }
-        }
-
-        const currency = currencies.size === 1 ? Array.from(currencies)[0] : 'MIXED';
-        console.log(`   总金额: ${UIEnhancer.formatAmount(totalAmount, currency)}`);
-
-        // 显示文件大小信息
-        const fs = require('fs');
-        if (fs.existsSync(outputPath)) {
-            const stats = fs.statSync(outputPath);
-            const fileSize = (stats.size / 1024).toFixed(2);
-            console.log(`   文件大小: ${fileSize} KB`);
-        }
-    }
-
-    getHelp(): string {
-        return `
-导出交易数据
-
-用法: /export <格式> [选项]
-
-支持的导出格式:
-  csv         CSV格式 (Excel兼容)
-  excel       Excel格式 (.xlsx)
-  json        JSON格式
-  beancount   Beancount格式
-
-选项:
-  outputPath=<输出路径>    指定输出文件路径
-  startDate=<开始日期>      开始日期 (YYYY-MM-DD)
-  endDate=<结束日期>        结束日期 (YYYY-MM-DD)
-  accounts=<账户列表>       账户过滤，多个账户用逗号分隔
-  tags=<标签列表>          标签过滤，多个标签用逗号分隔
-  query=<关键词>           关键词搜索
+参数:
+- format: 导出格式 (csv, json, excel, pdf)
+- outputPath: 输出文件路径
+- startDate: 开始日期 (YYYY-MM-DD)
+- endDate: 结束日期 (YYYY-MM-DD)
+- accounts: 账户列表（用逗号分隔）
+- interactive: 是否使用交互式输入 (true/false)
 
 示例:
-  /export csv
-  /export excel outputPath=./my_transactions.xlsx
-  /export json startDate=2024-01-01 endDate=2024-12-31
-  /export beancount accounts=Assets:Bank,Expenses:Food
-  /export csv tags=travel,food query=购物
+export format=csv outputPath=./data.csv
+export format=json startDate=2024-01-01 endDate=2024-12-31
+export format=excel accounts="Assets:Cash,Expenses:Food"
+export interactive=true
     `;
-    }
+  }
 }

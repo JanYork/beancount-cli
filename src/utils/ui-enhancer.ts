@@ -59,7 +59,7 @@ export class UIEnhancer {
       padding: 1,
       margin: 1,
       borderStyle: 'round',
-      borderColor: color.name,
+      borderColor: 'blue',
     });
 
     console.log(box);

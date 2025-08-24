@@ -4,11 +4,11 @@
  * 作者: JanYork
  */
 
-import { format } from 'date-fns';
 import { BaseCommand } from './base-command';
 import { BeancountEngine } from '../engine/beancount-engine';
-import { UIEnhancer } from '../utils/ui-enhancer';
+import { CLIRenderer } from '../presentation/cli/cli-renderer';
 import { SearchPaginationUtil } from '../utils/search-pagination';
+import { InteractiveCommandHandler } from '../presentation/cli/interactive-command-handler';
 
 export class ListTransactionsCommand extends BaseCommand {
   constructor(engine: BeancountEngine) {
@@ -23,6 +23,11 @@ export class ListTransactionsCommand extends BaseCommand {
    */
   async execute(params: Record<string, any>): Promise<import('../types').CommandResult> {
     try {
+      // 检查是否需要交互式输入
+      if (params['interactive'] === true || Object.keys(params).length === 0) {
+        return await this.executeInteractive();
+      }
+
       // 解析搜索选项
       const searchOptions = SearchPaginationUtil.parseSearchOptions(params);
 
@@ -49,27 +54,8 @@ export class ListTransactionsCommand extends BaseCommand {
         pageSize
       );
 
-      // 显示搜索过滤器
-      UIEnhancer.showSearchFilters(searchOptions);
-
       // 显示交易列表
-      const tableData = paginatedTransactions.map(tx => [
-        format(new Date(tx.date), 'yyyy-MM-dd'),
-        tx.payee || '-',
-        tx.narration.length > 30 ? tx.narration.substring(0, 30) + '...' : tx.narration,
-        UIEnhancer.formatAmount(SearchPaginationUtil.calculateTransactionAmount(tx)),
-        tx.postings.map(p => p.account).join('; '),
-        tx.tags.join(', ') || '-',
-      ]);
-
-      const headers = ['日期', '收款人/付款人', '描述', '金额', '账户', '标签'];
-
-      UIEnhancer.showPaginatedTable(
-        tableData,
-        headers,
-        pagination,
-        `交易记录 (共 ${filteredTransactions.length} 条)`
-      );
+      CLIRenderer.showTransactionTable(paginatedTransactions, filteredTransactions.length);
 
       return this.createSuccessResult(
         `成功显示 ${paginatedTransactions.length} 条交易记录`,
@@ -85,6 +71,42 @@ export class ListTransactionsCommand extends BaseCommand {
   }
 
   /**
+   * 执行交互式查询交易记录
+   */
+  private async executeInteractive(): Promise<import('../types').CommandResult> {
+    try {
+      // 使用交互式处理器收集参数
+      const interactiveParams = await InteractiveCommandHandler.handleListTransactions();
+      
+      // 构建参数
+      const params: Record<string, any> = {};
+      
+      if (interactiveParams.dateRange) {
+        params['startDate'] = interactiveParams.dateRange.start;
+        params['endDate'] = interactiveParams.dateRange.end;
+      }
+      
+      if (interactiveParams.accounts && interactiveParams.accounts.length > 0) {
+        params['accounts'] = interactiveParams.accounts.join(',');
+      }
+      
+      if (interactiveParams.keyword) {
+        params['query'] = interactiveParams.keyword;
+      }
+      
+      if (interactiveParams.amountRange) {
+        params['amountRange.min'] = interactiveParams.amountRange.min;
+        params['amountRange.max'] = interactiveParams.amountRange.max;
+      }
+      
+      // 递归调用 execute 方法，传入收集到的参数
+      return await this.execute(params);
+    } catch (error) {
+      return this.createErrorResult(`交互式查询交易记录失败: ${error}`);
+    }
+  }
+
+  /**
    * 获取命令帮助信息
    *
    * @returns 帮助信息
@@ -93,7 +115,7 @@ export class ListTransactionsCommand extends BaseCommand {
     return `
 📋 列出交易记录
 
-用法: /list_transactions [选项]
+用法: list_transactions [选项] 或 list_transactions interactive=true
 
 选项:
   startDate=<开始日期>     开始日期 (YYYY-MM-DD)
@@ -108,13 +130,15 @@ export class ListTransactionsCommand extends BaseCommand {
   sortOrder=<排序方向>     排序方向 (asc|desc)
   page=<页码>             页码 (默认: 1)
   pageSize=<每页大小>      每页大小 (默认: 20)
+  interactive=true        使用交互式查询
 
 示例:
-  /list_transactions
-  /list_transactions startDate=2024-01-01 endDate=2024-12-31
-  /list_transactions query=购物 page=2 pageSize=10
-  /list_transactions accounts=Assets:Bank,Expenses:Food
-  /list_transactions sortBy=date sortOrder=desc
+  list_transactions
+  list_transactions startDate=2024-01-01 endDate=2024-12-31
+  list_transactions query=购物 page=2 pageSize=10
+  list_transactions accounts=Assets:Bank,Expenses:Food
+  list_transactions sortBy=date sortOrder=desc
+  list_transactions interactive=true
     `;
   }
 }
